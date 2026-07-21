@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Node / tooling (not needed for this static site, but safe to ignore)
+node_modules/
+npm-debug.log*
+
+# Vercel
+.vercel
+
+# Editor
+.vscode/
+.idea/

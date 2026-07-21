@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Eason — World Model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;600&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet" />
+
+<!-- ============================================================= -->
+<!--   你每天唯一需要编辑的地方 · THE ONLY BLOCK YOU EDIT DAILY     -->
+<!--   • 大行星 = planets 数组里的每一项                            -->
+<!--   • 小卫星星球(带图标、可点击)= 每颗行星的 moons 数组          -->
+<!--   • 散落的记忆星尘 = footprints 数组                           -->
+<!--   下面 "RENDER ENGINE" 以下的代码日常几乎不用碰。              -->
+<!-- ============================================================= -->
+<script>
+const CONTENT = {
+
+  // —— 中心恒星 = 你本人 —— //
+  core: {
+    initials:"E",
+    name:  { en:"EASON CHEN", zh:"Eason Chen", ja:"イーソン・チェン" },
+    kicker:{ en:"FOUNDER & CEO · JAGUAR AI", zh:"创始人兼 CEO · Jaguar AI", ja:"創業者 & CEO · Jaguar AI" },
+    role:  {
+      en:"Founder & CEO of Jaguar AI — the AI technical cofounder for non-technical founders. Ex-Bloomberg · a16z-backed exit.",
+      zh:"Jaguar AI 创始人兼 CEO —— 为非技术创始人打造的 AI 技术合伙人。前 Bloomberg · a16z 被投项目退出。",
+      ja:"Jaguar AI 創業者兼 CEO —— 非技術系ファウンダーのための AI テクニカル共同創業者。元 Bloomberg · a16z 出資先イグジット。"
+    },
+    // 首页英雄区分行显示（短句，避免一行太长）
+    tagline:{
+      en:"The AI technical cofounder for non-technical founders.",
+      zh:"为非技术创始人打造的 AI 技术合伙人。",
+      ja:"非技術系ファウンダーのための AI テクニカル共同創業者。"
+    },
+    creds:{
+      en:"Columbia · Ex-Bloomberg · a16z-backed exit · SF / NYC / Bali",
+      zh:"哥伦比亚大学 · 前 Bloomberg · a16z 被投退出 · 旧金山 / 纽约 / 巴厘",
+      ja:"コロンビア大学 · 元 Bloomberg · a16z 出資先イグジット · SF / NYC / バリ"
+    },
+    manifesto:[
+      { en:"I built Jaguar AI so no founder ships on a broken foundation.",
+        zh:"我做 Jaguar AI，是为了让没有一个创始人建在破碎的地基上。",
+        ja:"どのファウンダーも壊れた土台の上に出さないために、Jaguar AI をつくった。" },
+      { en:"After years building data infrastructure at Bloomberg and an a16z-backed exit, I kept watching great ideas stall — not because the product was wrong, but because the system under it was.",
+        zh:"在 Bloomberg 做了多年数据基础设施、又经历一次 a16z 被投项目退出后，我不断看到好点子停摆——不是产品错了，而是它底下的系统错了。",
+        ja:"Bloomberg でデータ基盤を築き、a16z 出資先のイグジットを経て、優れたアイデアが失速するのを何度も見てきた——製品ではなく、その下の仕組みが原因で。" },
+      { en:"Minimal cost, maximum return. Making something impactful takes effort — making something massively impactful takes AI.",
+        zh:"最小成本，最大回报。做出有影响力的东西要努力——做出巨大影响力的东西，要靠 AI。",
+        ja:"最小のコストで最大のリターン。インパクトを生むには努力が要る——巨大なインパクトには AI が要る。" }
+    ]
+  },
+
+  langs:[ {id:"en",label:"EN"}, {id:"zh",label:"中"}, {id:"ja",label:"日"} ],
+
+  // —— 六颗大行星（由内向外 = 过去→现在→未来/门户）——
+  //   moons: 小卫星星球，icon 用一个 emoji 当 logo，link 可点进去。
+  planets:[
+    {
+      id:"work", color:"#22d3ee",
+      name:{ en:"ORIGIN", zh:"起源", ja:"起源" },
+      tag:{ en:"Career", zh:"履历", ja:"経歴" },
+      label:{ en:"Career & Footprints", zh:"过去履历", ja:"経歴" },
+      era:{ en:"PAST", zh:"过去", ja:"過去" },
+      intro:{ en:"Where I've been. The path that made me.", zh:"我走过的路，塑造了我。", ja:"歩んできた道。" },
+      type:"timeline",
+      items:[
+        { date:"NOW", title:{en:"Founder & CEO · Jaguar AI",zh:"创始人兼 CEO · Jaguar AI",ja:"創業者 & CEO · Jaguar AI"},
+          desc:{en:"The AI technical cofounder for non-technical founders. SF / NYC · Bangkok / Bali.",zh:"为非技术创始人打造的 AI 技术合伙人。旧金山 / 纽约 · 曼谷 / 巴厘。",ja:"非技術系ファウンダー向けの AI テクニカル共同創業者。SF / NYC · バンコク / バリ。"} },
+        { date:"2024", title:{en:"Founder · TNG Coach (TechNotGeek)",zh:"创始人 · TNG Coach（科技不极客）",ja:"創業者 · TNG Coach"},
+          desc:{en:"AI-driven career consulting for new grads and early-career professionals.",zh:"面向应届生与早期职场人的 AI 职业咨询。",ja:"新卒・若手向けの AI キャリアコンサルティング。"} },
+        { date:"EARLIER", title:{en:"a16z-backed startup · Exit",zh:"a16z 被投创业公司 · 退出",ja:"a16z 出資スタートアップ · イグジット"},
+          desc:{en:"Part of the team through an a16z-backed exit. Launch Accelerator.",zh:"作为团队成员经历一次 a16z 被投项目退出。Launch 加速器。",ja:"a16z 出資先のイグジットをチームとして経験。Launch アクセラレータ。"} },
+        { date:"EARLIER", title:{en:"Bloomberg · Data Infrastructure",zh:"Bloomberg · 数据基础设施",ja:"Bloomberg · データ基盤"},
+          desc:{en:"Years building production data infrastructure.",zh:"多年构建生产级数据基础设施。",ja:"数年にわたり本番データ基盤を構築。"} },
+        { date:"FOUNDATION", title:{en:"Columbia University · Data Science",zh:"哥伦比亚大学 · 数据科学",ja:"コロンビア大学 · データサイエンス"},
+          desc:{en:"Applied ML foundations — image classification, churn analysis, and the data-infrastructure instinct that runs through everything since.",zh:"应用机器学习的根基——图像分类、流失分析，以及此后贯穿一切的数据基础设施直觉。",ja:"応用 ML の基礎——画像分類、チャーン分析、そして以後すべてに通じるデータ基盤の勘。"} }
+      ],
+      moons:[
+        { icon:"🎓", title:{en:"TNG Coach",zh:"TNG Coach",ja:"TNG Coach"}, link:"https://technotgeek.com/" },
+        { icon:"📊", title:{en:"GitHub · 52 repos",zh:"GitHub · 52 个仓库",ja:"GitHub · 52 リポジトリ"}, link:"https://github.com/easonchen19" },
+        { icon:"📰", title:{en:"Press: Yahoo Finance feature",zh:"报道：Yahoo Finance",ja:"掲載：Yahoo Finance"}, link:"https://finance.yahoo.com/news/tng-coach-revolutionizes-career-consulting-173000746.html" }
+      ]
+    },
+    {
+      id:"products", color:"#ff6b3d",
+      name:{ en:"FORGE", zh:"熔炉", ja:"炉" },
+      tag:{ en:"Products", zh:"产品", ja:"プロダクト" },
+      label:{ en:"Startup · Product Matrix", zh:"当下 Startup · 产品矩阵", ja:"スタートアップ" },
+      era:{ en:"PRESENT", zh:"现在", ja:"現在" },
+      intro:{ en:"One core product. Satellites feeding it.", zh:"一个主产品，一圈引流的卫星。", ja:"1つの主力製品と衛星群。" },
+      type:"products",
+      main:{ name:{en:"Jaguar AI",zh:"Jaguar AI",ja:"Jaguar AI"},
+             desc:{en:"Your AI technical cofounder. Ship the right architecture before you write a line of code — designed, reviewed, and build-planned the way a senior CTO would. From $200/mo.",zh:"你的 AI 技术合伙人。在写下第一行代码前就定好正确的架构——像资深 CTO 一样设计、审查、给出搭建计划。$200/月起。",ja:"あなたの AI テクニカル共同創業者。1行書く前に正しいアーキテクチャを。シニア CTO のように設計・レビュー・構築計画。月 $200〜。"}, link:"https://jaguarai.ai" },
+      satellites:[
+        { name:{en:"OpenClaw Signal",zh:"OpenClaw Signal",ja:"OpenClaw Signal"}, desc:{en:"Bloomberg for the agent economy — AI skill & MCP market intelligence, weekly. $9/mo.",zh:"智能体经济的 Bloomberg —— AI 技能与 MCP 市场情报，每周更新。$9/月。",ja:"エージェント経済の Bloomberg —— AI スキル & MCP 市場インテリジェンス、週次。月 $9。"}, link:"https://signal.jaguarai.ai" },
+        { name:{en:"Jaguar Market",zh:"Jaguar Market",ja:"Jaguar Market"}, desc:{en:"Value-first cold email — a personalized website mockup per prospect. $99/mo.",zh:"价值优先的冷邮件 —— 给每个潜客生成一版个性化网页样稿。$99/月。",ja:"価値ファーストのコールドメール —— 見込み客ごとにパーソナライズしたサイトモック。月 $99。"}, link:"https://market.jaguarai.ai" },
+        { name:{en:"BuildSignal",zh:"BuildSignal",ja:"BuildSignal"}, desc:{en:"Turn your resume into posts across every channel.",zh:"把你的简历变成横跨每个平台的内容。",ja:"履歴書をあらゆるチャネルの投稿に。"}, link:"https://buildsignal.me" },
+        { name:{en:"ZeroStaff",zh:"ZeroStaff",ja:"ZeroStaff"}, desc:{en:"Turn your expertise into a business with zero employees — demand validated, then built, marketed, and run by AI. $9/mo + rev share.",zh:"零员工把你的专长变成生意——先验证需求，再由 AI 搭建、营销、运营。$9/月 + 分成。",ja:"従業員ゼロで専門知識をビジネスに——需要を検証し、AI が構築・集客・運用。月 $9 + レベニューシェア。"}, link:"https://zerostaff.live" }
+      ],
+      moons:[
+        { icon:"🐆", title:{en:"Jaguar AI",zh:"Jaguar AI",ja:"Jaguar AI"}, link:"https://jaguarai.ai" },
+        { icon:"🦀", title:{en:"OpenClaw Signal",zh:"OpenClaw Signal",ja:"OpenClaw Signal"}, link:"https://signal.jaguarai.ai" },
+        { icon:"📧", title:{en:"Jaguar Market",zh:"Jaguar Market",ja:"Jaguar Market"}, link:"https://market.jaguarai.ai" },
+        { icon:"📡", title:{en:"BuildSignal",zh:"BuildSignal",ja:"BuildSignal"}, link:"https://buildsignal.me" },
+        { icon:"🏢", title:{en:"ZeroStaff",zh:"ZeroStaff",ja:"ZeroStaff"}, link:"https://zerostaff.live" }
+      ]
+    },
+    {
+      id:"content", color:"#4ade80",
+      name:{ en:"SIGNAL", zh:"信号", ja:"信号" },
+      tag:{ en:"Content", zh:"内容", ja:"発信" },
+      label:{ en:"Ideas & Broadcasts", zh:"内容发声", ja:"発信" },
+      era:{ en:"PRESENT", zh:"现在", ja:"現在" },
+      intro:{ en:"Where I publish thinking across platforms.", zh:"我在各平台发布思考的地方。", ja:"各プラットフォームでの発信。" },
+      type:"links",
+      items:[
+        { name:"AI Abroad School · 用 AI 一个人造一家公司", handle:"aiabroad.school · 4-week cohort", link:"https://aiabroad.school" },
+        { name:"Instagram", handle:"@eason_chennnnn · 9k followers", link:"https://www.instagram.com/eason_chennnnn/" },
+        { name:"LinkedIn", handle:"@easonchen19", link:"https://www.linkedin.com/in/easonchen19/" },
+        { name:"OpenClaw Signal · Weekly Report", handle:"signal.jaguarai.ai", link:"https://signal.jaguarai.ai" },
+        { name:"小红书 / RED · 纽约创始人Eason", handle:"@EasonChen_DJ", link:"https://xhslink.com/m/3EIHI8Cimak" },
+        { name:"X / Twitter · Build in Public", handle:"@easonIPO", link:"https://x.com/easonIPO" },
+        { name:"Personal site", handle:"easonchen95.com", link:"https://easonchen95.com/" }
+      ],
+      moons:[
+        { icon:"🏫", title:{en:"AI Abroad School",zh:"AI Abroad School",ja:"AI Abroad School"}, link:"https://aiabroad.school" },
+        { icon:"📸", title:{en:"Instagram · 9k",zh:"Instagram · 9k",ja:"Instagram · 9k"}, link:"https://www.instagram.com/eason_chennnnn/" },
+        { icon:"💼", title:{en:"LinkedIn",zh:"领英",ja:"LinkedIn"}, link:"https://www.linkedin.com/in/easonchen19/" },
+        { icon:"📈", title:{en:"Weekly signal report",zh:"每周市场情报",ja:"週次レポート"}, link:"https://signal.jaguarai.ai" },
+        { icon:"📕", title:{en:"小红书 · 纽约创始人Eason",zh:"小红书 · 纽约创始人Eason",ja:"小紅書 · 纽约创始人Eason"}, link:"https://xhslink.com/m/3EIHI8Cimak" },
+        { icon:"🐦", title:{en:"X · @easonIPO",zh:"X · @easonIPO",ja:"X · @easonIPO"}, link:"https://x.com/easonIPO" }
+      ]
+    },
+    {
+      id:"values", color:"#a855f7",
+      name:{ en:"COMPASS", zh:"罗盘", ja:"羅針盤" },
+      tag:{ en:"Values", zh:"价值观", ja:"価値観" },
+      label:{ en:"Values & World-View", zh:"价值观 · 世界观", ja:"価値観" },
+      era:{ en:"CONSTANT", zh:"恒常", ja:"不変" },
+      intro:{ en:"The beliefs everything else orbits.", zh:"其余一切围绕它公转的信念。", ja:"すべてが回る信念。" },
+      type:"statements",
+      items:[
+        { en:"Minimal cost, maximum return.", zh:"最小成本，最大回报。", ja:"最小のコスト、最大のリターン。" },
+        { en:"Making something impactful takes effort. Making something massively impactful takes AI.", zh:"做出有影响力的东西要努力；做出巨大影响力的东西，要靠 AI。", ja:"インパクトには努力が要る。巨大なインパクトには AI が要る。" },
+        { en:"No founder should ship on a broken foundation.", zh:"没有一个创始人应该建在破碎的地基上。", ja:"壊れた土台の上に出すべきファウンダーは、一人もいない。" },
+        { en:"The category isn't code generation — it's technical judgment.", zh:"真正的赛道不是代码生成，而是技术判断力。", ja:"勝負どころはコード生成ではなく、技術的な判断力だ。" }
+      ],
+      moons:[
+        { icon:"✦", title:{en:"Minimal cost, maximum return",zh:"最小成本，最大回报",ja:"最小コスト、最大リターン"}, link:"" },
+        { icon:"🧭", title:{en:"Technical judgment > code",zh:"技术判断 > 代码",ja:"技術判断 > コード"}, link:"" }
+      ]
+    },
+    {
+      id:"life", color:"#ffd166",
+      name:{ en:"ODYSSEY", zh:"漫游", ja:"旅路" },
+      tag:{ en:"Life", zh:"生活", ja:"人生" },
+      label:{ en:"Travel & Craft", zh:"旅行 · 爱好", ja:"旅と趣味" },
+      era:{ en:"LIFE", zh:"生活", ja:"人生" },
+      intro:{ en:"World traveler — 25 countries down, chasing 100. Building between time zones.", zh:"世界旅行者——已走过 25 个国家，向 100 进发。在时区之间搭建产品。", ja:"世界を旅する——25 か国を巡り、100 を目指す。タイムゾーンの間で創る。" },
+      type:"gallery",
+      items:[
+        { title:{en:"25 / 100 countries",zh:"25 / 100 个国家",ja:"25 / 100 か国"}, note:{en:"The quest — a quarter of the way to 100.",zh:"这场旅程——到 100 的四分之一。",ja:"クエスト——100 への 4 分の 1。"} },
+        { title:{en:"Thailand",zh:"泰国",ja:"タイ"}, note:{en:"Southeast Asia base.",zh:"东南亚据点。",ja:"東南アジアの拠点。"} },
+        { title:{en:"San Francisco",zh:"旧金山",ja:"サンフランシスコ"}, note:{en:"Where the building happens.",zh:"造东西的地方。",ja:"ものづくりの地。"} },
+        { title:{en:"New York",zh:"纽约",ja:"ニューヨーク"}, note:{en:"Where the career started.",zh:"职业生涯起点。",ja:"キャリアの原点。"} },
+        { title:{en:"Chile · Argentina",zh:"智利 · 阿根廷",ja:"チリ · アルゼンチン"}, note:{en:"South America.",zh:"南美。",ja:"南米。"} },
+        { title:{en:"Colombia · Mexico",zh:"哥伦比亚 · 墨西哥",ja:"コロンビア · メキシコ"}, note:{en:"Latin America.",zh:"拉美。",ja:"ラテンアメリカ。"} },
+        { title:{en:"Hawaii · Puerto Rico",zh:"夏威夷 · 波多黎各",ja:"ハワイ · プエルトリコ"}, note:{en:"Islands.",zh:"海岛。",ja:"島々。"} },
+        { title:{en:"Malaysia · Singapore · Shanghai",zh:"马来西亚 · 新加坡 · 上海",ja:"マレーシア · シンガポール · 上海"}, note:{en:"Asia.",zh:"亚洲。",ja:"アジア。"} },
+        { title:{en:"Canada · Switzerland",zh:"加拿大 · 瑞士",ja:"カナダ · スイス"}, note:{en:"North & Europe.",zh:"北美与欧洲。",ja:"北米とヨーロッパ。"} }
+      ],
+      moons:[
+        { icon:"✈️", title:{en:"Thailand",zh:"泰国",ja:"タイ"}, link:"https://www.instagram.com/eason_chennnnn/" },
+        { icon:"🌉", title:{en:"San Francisco",zh:"旧金山",ja:"サンフランシスコ"}, link:"https://www.instagram.com/eason_chennnnn/" },
+        { icon:"🏝️", title:{en:"Hawaii",zh:"夏威夷",ja:"ハワイ"}, link:"https://www.instagram.com/eason_chennnnn/" },
+        { icon:"🏔️", title:{en:"Switzerland",zh:"瑞士",ja:"スイス"}, link:"https://www.instagram.com/eason_chennnnn/" },
+        { icon:"🗺️", title:{en:"25 / 100 countries",zh:"25 / 100 国",ja:"25 / 100 か国"}, link:"https://www.instagram.com/eason_chennnnn/" }
+      ]
+    },
+    {
+      id:"contact", color:"#f472b6",
+      name:{ en:"GATEWAY", zh:"门户", ja:"ゲート" },
+      tag:{ en:"Contact", zh:"联系", ja:"連絡" },
+      label:{ en:"Collaborate · Invest · Reach", zh:"合作 · 投资人 · 联系", ja:"つながる" },
+      era:{ en:"PORTAL", zh:"门户", ja:"ポータル" },
+      intro:{ en:"What I offer and every door into my world.", zh:"我能提供的价值，以及通往我世界的每扇门。", ja:"提供できる価値と、すべての扉。" },
+      type:"contact",
+      channels:[
+        { role:{en:"Book a call",zh:"预约通话",ja:"通話を予約"}, note:{en:"15 minutes on my calendar.",zh:"在我的日历上约 15 分钟。",ja:"私のカレンダーで15分。"}, link:"https://cal.com/easonchen" },
+        { role:{en:"Co-founder",zh:"合伙人",ja:"共同創業者"}, note:{en:"Build Jaguar's future with me.",zh:"和我一起建 Jaguar 的未来。",ja:"Jaguar の未来を一緒に。"}, link:"https://cal.com/easonchen" },
+        { role:{en:"Investor",zh:"投资人",ja:"投資家"}, note:{en:"Back an AI technical cofounder.",zh:"投资一个 AI 技术合伙人。",ja:"AI 技術共同創業者に投資。"}, link:"https://cal.com/easonchen" },
+        { role:{en:"Podcast / Interview",zh:"播客访谈",ja:"ポッドキャスト"}, note:{en:"Invite me on — eason@jaguarai.ai.",zh:"邀我上节目 — eason@jaguarai.ai。",ja:"出演依頼 — eason@jaguarai.ai。"}, link:"mailto:eason@jaguarai.ai" }
+      ],
+      moons:[
+        { icon:"📅", title:{en:"Book a call",zh:"预约通话",ja:"通話予約"}, link:"https://cal.com/easonchen" },
+        { icon:"✉️", title:{en:"eason@jaguarai.ai",zh:"eason@jaguarai.ai",ja:"eason@jaguarai.ai"}, link:"mailto:eason@jaguarai.ai" },
+        { icon:"💼", title:{en:"LinkedIn",zh:"领英",ja:"LinkedIn"}, link:"https://www.linkedin.com/in/easonchen19/" },
+        { icon:"🐙", title:{en:"GitHub",zh:"GitHub",ja:"GitHub"}, link:"https://github.com/easonchen19" }
+      ]
+    }
+  ],
+
+  // —— 记忆星尘：散落全盘的小足迹，鼠标碰到浮出说明 ——
+  footprints:[
+    { title:{en:"Featured in Yahoo Finance",zh:"被 Yahoo Finance 报道",ja:"Yahoo Finance に掲載"}, link:"https://finance.yahoo.com/news/tng-coach-revolutionizes-career-consulting-173000746.html" },
+    { title:{en:"a16z-backed exit",zh:"a16z 被投项目退出",ja:"a16z 出資先イグジット"}, link:"" },
+    { title:{en:"Built data infra at Bloomberg",zh:"在 Bloomberg 做数据基础设施",ja:"Bloomberg でデータ基盤"}, link:"" },
+    { title:{en:"52 repos on GitHub",zh:"GitHub 上 52 个仓库",ja:"GitHub に 52 リポジトリ"}, link:"https://github.com/easonchen19" },
+    { title:{en:"Arctic Code Vault contributor",zh:"北极代码库贡献者",ja:"Arctic Code Vault 貢献者"}, link:"https://github.com/easonchen19" },
+    { title:{en:"78k+ AI skills tracked by Signal",zh:"Signal 追踪 7.8 万+ AI 技能",ja:"Signal が 7.8 万+ の AI スキルを追跡"}, link:"https://signal.jaguarai.ai" },
+    { title:{en:"World traveler — 25 / 100 countries",zh:"世界旅行者 — 25 / 100 国",ja:"世界を旅する — 25 / 100 か国"}, link:"https://www.instagram.com/eason_chennnnn/" },
+    { title:{en:"9k on Instagram",zh:"Instagram 9 千粉丝",ja:"Instagram 9千フォロワー"}, link:"https://www.instagram.com/eason_chennnnn/" },
+    { title:{en:"Building in public — $25k MRR",zh:"公开构建 — $25k MRR",ja:"Build in public — $25k MRR"}, link:"https://x.com/easonIPO" },
+    { title:{en:"Columbia University",zh:"哥伦比亚大学",ja:"コロンビア大学"}, link:"" }
+  ]
+};
+</script>
+<!-- ============================================================= -->
+<!--                   ▲  CONTENT 区结束  ▲                        -->
+<!-- ============================================================= -->
+
+<style>
+:root{
+  --bg-0:#04030e; --ink:#eaf0ff; --ink-dim:#94a0cf;
+  --mars:#ff6b3d; --cyan:#22d3ee; --violet:#a855f7; --gold:#ffd166;
+  --ring:rgba(255,255,255,.09); --panel:rgba(10,14,34,.8);
+  --display:'Orbitron',system-ui,sans-serif;
+  --body:'Inter','Noto Sans SC','Noto Sans JP',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg-0)}
+body{color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-font-smoothing:antialiased}
+#sky{position:fixed;inset:0;display:block;z-index:0;cursor:default}
+.vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(140% 110% at 50% 48%,transparent 70%,rgba(0,0,0,.28) 100%)}
+
+.topbar{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;justify-content:space-between;
+  align-items:center;padding:22px 30px;pointer-events:none}
+.brand{font-family:var(--display);font-weight:700;letter-spacing:.32em;font-size:12px;color:var(--ink-dim)}
+.tbright{display:flex;align-items:center;gap:10px;pointer-events:auto}
+.soundbtn{font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--ink-dim);
+  background:rgba(255,255,255,.04);border:1px solid var(--ring);border-radius:999px;padding:9px 13px;cursor:pointer;
+  backdrop-filter:blur(8px);transition:.2s}
+.soundbtn.on{color:#05060f;background:linear-gradient(120deg,var(--gold),var(--mars))}
+.soundbtn:hover{color:var(--ink)}
+.langsw{display:flex;gap:5px;pointer-events:auto;background:rgba(255,255,255,.04);border:1px solid var(--ring);
+  border-radius:999px;padding:5px;backdrop-filter:blur(8px)}
+.langsw button{font-family:var(--display);font-size:12px;font-weight:700;color:var(--ink-dim);background:none;
+  border:none;cursor:pointer;padding:6px 12px;border-radius:999px;transition:.2s}
+.langsw button.on{color:#05060f;background:linear-gradient(120deg,var(--cyan),var(--violet))}
+.langsw button:hover{color:var(--ink)}
+
+.intro{position:fixed;left:0;right:0;bottom:38px;z-index:30;text-align:center;pointer-events:none;transition:opacity 1s}
+.intro .r{font-family:var(--display);font-weight:700;letter-spacing:.42em;font-size:10.5px;color:var(--mars);margin-bottom:10px;text-transform:uppercase}
+.intro .h{font-family:var(--display);font-weight:900;font-size:clamp(26px,4.6vw,46px);letter-spacing:.1em;
+  background:linear-gradient(120deg,#fff,var(--cyan) 45%,var(--violet));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.intro .tag{margin-top:14px;font-family:var(--body);font-weight:300;font-size:clamp(13px,1.7vw,16px);
+  color:var(--ink);max-width:560px;margin-left:auto;margin-right:auto;line-height:1.5;padding:0 20px}
+.intro .cred{margin-top:9px;font-family:var(--display);font-weight:500;font-size:10.5px;letter-spacing:.14em;
+  color:var(--ink-dim);text-transform:uppercase}
+.intro .cue{margin-top:16px;font-size:10.5px;letter-spacing:.3em;color:var(--ink-dim);font-family:var(--display);
+  animation:breathe 3.4s ease-in-out infinite}
+
+.tip{position:fixed;z-index:45;pointer-events:none;transform:translate(-50%,-150%);
+  background:rgba(8,10,26,.92);border:1px solid var(--ring);border-radius:10px;padding:8px 12px;font-size:12px;
+  color:var(--ink);white-space:nowrap;opacity:0;transition:opacity .15s;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+
+.overlay{position:fixed;inset:0;z-index:60;display:none;background:rgba(2,3,10,.82);backdrop-filter:blur(16px);
+  overflow-y:auto;padding:72px 20px 60px}
+.overlay.open{display:block;animation:fadeIn .3s}
+.sheet{position:relative;overflow:hidden;max-width:860px;margin:0 auto;background:var(--panel);
+  border:1px solid var(--ring);border-radius:22px;padding:38px 34px;
+  box-shadow:0 30px 90px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.05);
+  animation:sheetIn .5s cubic-bezier(.2,.9,.3,1.1)}
+/* 降落星球的强调色辉光，从顶部浸染面板 */
+.sheet::before{content:"";position:absolute;top:-160px;left:50%;transform:translateX(-50%);
+  width:520px;height:320px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(ellipse,var(--accent),transparent 68%);opacity:.16}
+.landing{display:flex;align-items:center;gap:20px;margin-bottom:8px;position:relative}
+.planetOrb{flex:0 0 auto;width:62px;height:62px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-family:var(--display);font-weight:900;font-size:22px;color:rgba(10,8,24,.85);
+  background:radial-gradient(circle at 34% 30%,#fff,var(--accent) 46%,rgba(0,0,0,.55));
+  box-shadow:0 0 46px var(--accent),0 0 14px var(--accent);
+  animation:orbFloat 5s ease-in-out infinite}
+.planetOrb::after{content:"";position:absolute;width:82px;height:82px;border-radius:50%;
+  border:1px solid var(--accent);opacity:.35}
+@keyframes orbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.sheetHead{display:flex;flex-direction:column;gap:3px;flex-wrap:wrap}
+.sheetKicker{font-family:var(--display);font-size:11px;letter-spacing:.25em;color:var(--accent)}
+.sheetTitle{font-family:var(--display);font-weight:900;font-size:clamp(24px,4.4vw,38px);letter-spacing:.04em}
+.sheetSub{color:var(--ink);font-weight:600;font-size:15px}
+.sheetIntro{color:var(--ink-dim);margin:8px 0 26px;font-size:14px}
+.closeBtn{position:fixed;top:24px;right:28px;z-index:62;width:46px;height:46px;border-radius:50%;
+  border:1px solid var(--ring);background:rgba(255,255,255,.05);color:var(--ink);font-size:20px;cursor:pointer;transition:.25s}
+.closeBtn:hover{background:var(--mars);color:#fff;transform:rotate(90deg)}
+.tl{position:relative;padding-left:26px;border-left:1px solid var(--ring);margin-left:6px}
+.tl .node{position:relative;padding:0 0 26px 8px}
+.tl .node::before{content:"";position:absolute;left:-33px;top:4px;width:12px;height:12px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 14px var(--accent)}
+.tl .date{font-family:var(--display);font-size:12px;color:var(--accent);letter-spacing:.1em}
+.tl .t{font-weight:600;font-size:16px;margin-top:3px}
+.tl .d{color:var(--ink-dim);font-size:14px;margin-top:3px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.card{background:rgba(255,255,255,.03);border:1px solid var(--ring);border-radius:14px;padding:18px;transition:.25s;
+  text-decoration:none;color:inherit;display:block}
+.card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.card .cn{font-weight:600;font-size:16px}
+.card .cd{color:var(--ink-dim);font-size:13px;margin-top:6px}
+.mainCard{background:linear-gradient(120deg,rgba(255,107,61,.18),rgba(168,85,247,.12));border:1px solid var(--accent);
+  border-radius:16px;padding:24px;margin-bottom:16px;text-decoration:none;color:inherit;display:block;transition:.25s}
+.mainCard:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(255,107,61,.25)}
+.mainCard .tag{font-family:var(--display);font-size:11px;letter-spacing:.2em;color:var(--accent)}
+.mainCard .cn{font-family:var(--display);font-weight:900;font-size:26px;margin-top:6px}
+.mainCard .cd{color:var(--ink-dim);margin-top:6px}
+.stmt{font-size:clamp(17px,2.6vw,22px);font-weight:300;line-height:1.5;padding:16px 0;border-bottom:1px solid var(--ring)}
+.linkRow{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border:1px solid var(--ring);
+  border-radius:12px;margin-bottom:10px;text-decoration:none;color:inherit;transition:.25s}
+.linkRow:hover{border-color:var(--accent);background:rgba(255,255,255,.03)}
+.linkRow .h{color:var(--ink-dim);font-size:13px}
+.badge{display:inline-block;font-family:var(--display);font-size:10px;letter-spacing:.15em;padding:3px 9px;
+  border-radius:999px;border:1px solid var(--accent);color:var(--accent);margin-left:8px;vertical-align:middle}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes sheetIn{from{opacity:0;transform:translateY(30px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes breathe{0%,100%{opacity:.45}50%{opacity:1}}
+@media(max-width:600px){.sheet{padding:28px 20px}.topbar{padding:16px 18px}}
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+<div class="vignette"></div>
+
+<div class="topbar">
+  <div class="brand">WORLD MODEL</div>
+  <div class="tbright">
+    <button class="soundbtn" id="soundbtn" title="ambient sound">♪ OFF</button>
+    <div class="langsw" id="langsw"></div>
+  </div>
+</div>
+
+<div class="intro" id="intro">
+  <div class="r" id="introKicker"></div>
+  <div class="h" id="introName"></div>
+  <div class="tag" id="introTag"></div>
+  <div class="cred" id="introCred"></div>
+  <div class="cue">HOVER A WORLD · CLICK TO ENTER</div>
+</div>
+
+<div class="tip" id="tip"></div>
+
+<div class="overlay" id="overlay">
+  <button class="closeBtn" id="closeBtn" aria-label="close">✕</button>
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<!-- ===================== RENDER ENGINE ===================== -->
+<script>
+let LANG="en";
+const T=o=>(o&&(o[LANG]??o.en))??"";
+const cv=document.getElementById('sky'), ctx=cv.getContext('2d');
+let W,H,cx,cy,DPR,discR,orbR;
+const SY=0.46;
+let time=0, intro=0;
+const mouse={x:-9999,y:-9999};
+// 星际穿越镜头状态
+let warp={active:false,phase:'idle',t:0,px:0,py:0,color:'#fff',target:null,kind:null,opened:false};
+
+/* ---------- 星系盘背景 ---------- */
+let discStars=[], nebulae=[], dust=[];
+function seedGalaxy(){
+  const N=Math.min(2800, Math.floor(innerWidth*innerHeight/750));
+  const ARMS=2, TIGHT=2.7, maxR=1.55;              // maxR>1 → 旋臂溢出屏幕，填满四边
+  discStars=[];
+  for(let i=0;i<N;i++){
+    const rr=Math.pow(Math.random(),0.6);
+    const arm=Math.floor(Math.random()*ARMS);
+    const spread=(1-rr)*0.5+0.05;
+    const ang=arm*(2*Math.PI/ARMS)+rr*TIGHT*Math.PI+(Math.random()-0.5)*spread*Math.PI;
+    const warm=Math.max(0,1-rr*1.5);
+    const hue=warm>0.45 ? 28+Math.random()*22 : (Math.random()<0.5?200+Math.random()*40:270+Math.random()*40);
+    const light=60+Math.random()*30;
+    discStars.push({ r:rr*maxR, ang, size:Math.random()*1.4+0.3,
+      col:`hsl(${hue},90%,${light}%)`, tw:Math.random()*6.28, sp:0.4+Math.random()*0.8, warm });
+  }
+  // 更多更大更亮的星云，铺开到全屏
+  nebulae=[];
+  const cols=['255,107,61','168,85,247','34,211,238','244,114,182','74,222,128'];
+  for(let i=0;i<8;i++){
+    const rr=0.2+Math.random()*1.15, arm=i%ARMS;
+    const ang=arm*Math.PI+rr*TIGHT*Math.PI+(Math.random()-0.5)*0.7;
+    nebulae.push({ r:rr, ang, size:0.22+Math.random()*0.3, col:cols[i%cols.length], a:0.12+Math.random()*0.1 });
+  }
+  // 记忆星尘
+  dust=[];
+  const real=CONTENT.footprints||[];
+  const DN=Math.min(160, 90+real.length*4);
+  for(let i=0;i<DN;i++){
+    const rr=Math.pow(Math.random(),0.5)*1.25+0.1;
+    const ang=Math.random()*6.283, isReal=i<real.length;
+    dust.push({ r:rr, ang, size:isReal?2.2:Math.random()*1.1+0.3, tw:Math.random()*6.28, sp:0.6+Math.random(),
+      real:isReal?real[i]:null, col:isReal?'#ffe9c7':'#d3e2ff' });
+  }
+}
+
+/* ---------- 大行星（轨道在引擎分配）---------- */
+let planets=[];
+function seedPlanets(){
+  const arr=CONTENT.planets, n=arr.length;
+  planets=arr.map((p,i)=>{
+    const t=i/(n-1);
+    const nm=(p.moons||[]).length;
+    // 卫星相位均匀铺开，绕自己母星匀速转
+    const moons=(p.moons||[]).map((m,j)=>({ref:m,
+      phase:j*(6.283/Math.max(1,nm)), speed:0.16, idx:j, scale:1, hover:0}));
+    return { ref:p, id:p.id, color:p.color,
+      a:0.34+t*0.64,            // 轨道半径均匀铺开（拉更宽 → 星球间距更大、不拥挤）
+      speed:0.03,               // 所有行星同一角速度 → 相对位置恒定、始终均匀
+      phase:i*(6.283/n),        // 初始相位均匀分布，彼此不扎堆
+      size:17.5-t*2.6+(p.id==='products'?5:0), scale:1, hover:0, moons };  // 整体放大
+  });
+}
+
+function resize(){
+  DPR=Math.min(devicePixelRatio||1,2);
+  W=innerWidth; H=innerHeight;
+  cv.width=W*DPR; cv.height=H*DPR; cv.style.width=W+'px'; cv.style.height=H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  cx=W/2; cy=H*0.5;
+  discR=Math.max(W,H)*0.82;          // 背景盘：用长边，铺满并溢出
+  orbR=Math.min(W,H)*0.48;           // 行星轨道：用短边，保证在屏内（拉宽给呼吸感）
+  seedGalaxy();
+}
+addEventListener('resize',resize);
+
+/* ---------- 主循环 ---------- */
+let hovered=null, hoverDust=null, hoverMoon=null;
+function frame(){
+  time+=1/60;
+  if(intro<1) intro=Math.min(1, intro+0.012);
+  const rot=time*0.055;
+  ctx.clearRect(0,0,W,H);
+
+  // 四角彩色雾（代替死黑）
+  ctx.globalCompositeOperation='lighter';
+  const corners=[[0,0,'80,40,140'],[W,0,'30,90,150'],[0,H,'150,50,90'],[W,H,'60,40,130']];
+  for(const [x,y,c] of corners){
+    const cg=ctx.createRadialGradient(x,y,0,x,y,Math.max(W,H)*0.6);
+    cg.addColorStop(0,`rgba(${c},0.16)`); cg.addColorStop(1,`rgba(${c},0)`);
+    ctx.fillStyle=cg;ctx.fillRect(0,0,W,H);
+  }
+
+  // ——— 星际穿越镜头：把整个星系内容做缩放/平移 ———
+  updateWarp();
+  const cam=warpCam();
+  ctx.save();
+  ctx.translate(cam.px+cam.panX, cam.py+cam.panY);
+  ctx.scale(cam.s, cam.s);
+  ctx.translate(-cam.px, -cam.py);
+
+  // 核心辉光
+  const coreR=discR*0.42*intro;
+  let g=ctx.createRadialGradient(cx,cy,0,cx,cy,coreR);
+  g.addColorStop(0,'rgba(255,232,190,0.95)');
+  g.addColorStop(0.22,'rgba(255,150,90,0.4)');
+  g.addColorStop(0.55,'rgba(160,90,210,0.14)');
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.save();ctx.translate(cx,cy);ctx.scale(1,SY+0.18);ctx.translate(-cx,-cy);
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,coreR,0,6.283);ctx.fill();ctx.restore();
+
+  // 星云
+  for(const n of nebulae){
+    const a=n.ang+rot, R=n.r*discR*intro;
+    const x=cx+R*Math.cos(a), y=cy+R*SY*Math.sin(a), rad=n.size*discR;
+    const ng=ctx.createRadialGradient(x,y,0,x,y,rad);
+    ng.addColorStop(0,`rgba(${n.col},${n.a})`); ng.addColorStop(1,`rgba(${n.col},0)`);
+    ctx.fillStyle=ng;ctx.beginPath();ctx.arc(x,y,rad,0,6.283);ctx.fill();
+  }
+
+  // 背景星
+  for(const s of discStars){
+    const a=s.ang+rot*(1.2-s.r*0.3), R=s.r*discR*intro;
+    const x=cx+R*Math.cos(a), y=cy+R*SY*Math.sin(a);
+    const tw=0.55+0.45*Math.sin(time*s.sp+s.tw);
+    ctx.globalAlpha=tw*intro*(0.55+s.warm*0.45);
+    ctx.fillStyle=s.col;ctx.beginPath();ctx.arc(x,y,s.size*(0.8+0.4*intro),0,6.283);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+
+  // 记忆星尘
+  hoverDust=null;
+  for(const d of dust){
+    const a=d.ang+rot*1.05, R=d.r*discR*intro;
+    const x=cx+R*Math.cos(a), y=cy+R*SY*Math.sin(a);
+    const tw=0.5+0.5*Math.sin(time*d.sp+d.tw);
+    let sz=d.size*(0.8+0.5*intro);
+    if(d.real){
+      if(!warp.active && Math.hypot(mouse.x-x,mouse.y-y)<15){ hoverDust={d,x,y}; sz*=2.6; }
+      ctx.globalAlpha=tw*intro;ctx.strokeStyle=d.col;ctx.lineWidth=0.6;
+      ctx.beginPath();ctx.moveTo(x-sz*2,y);ctx.lineTo(x+sz*2,y);ctx.moveTo(x,y-sz*2);ctx.lineTo(x,y+sz*2);ctx.stroke();
+    }
+    ctx.globalAlpha=tw*intro;ctx.fillStyle=d.col;ctx.beginPath();ctx.arc(x,y,sz,0,6.283);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+
+  // —— 大行星（按 y 排序景深）——
+  const drawn=planets.map(pl=>{
+    const t=pl.phase+time*pl.speed, R=pl.a*orbR*intro;
+    return {pl,x:cx+R*Math.cos(t),y:cy+R*SY*Math.sin(t),depth:Math.sin(t)};
+  }).sort((A,B)=>A.y-B.y);
+
+  // hover 检测：先 moon，再 planet
+  hoverMoon=null; hovered=null;
+  // 先算 moon 世界坐标并检测
+  for(const o of drawn){
+    for(const mn of o.pl.moons){
+      const mt=mn.phase+time*mn.speed;
+      const baseSz=o.pl.size*o.pl.scale;
+      const mrad=baseSz*2.6;
+      mn._x=o.x+mrad*Math.cos(mt); mn._y=o.y+mrad*SY*Math.sin(mt);
+      if(!warp.active && !hoverMoon && Math.hypot(mouse.x-mn._x,mouse.y-mn._y)<18){ hoverMoon={mn,x:mn._x,y:mn._y}; }
+    }
+  }
+  if(!warp.active && !hoverMoon && !hoverDust){
+    let best=1e9;
+    for(const o of drawn){
+      const dist=Math.hypot(mouse.x-o.x,mouse.y-o.y), rad=(o.pl.size*(1+0.2*o.depth))*2.6;
+      if(dist<rad && dist<best){best=dist;hovered=o.pl;}
+    }
+  }
+
+  for(const o of drawn){
+    const pl=o.pl;
+    pl._sx=o.x; pl._sy=o.y;               // 记录当前屏幕位置，供穿越镜头用
+    const target=(hovered===pl)?1.7:1;
+    pl.scale+=(target-pl.scale)*0.22;
+    pl.hover+=((hovered===pl?1:0)-pl.hover)*0.2;
+    const sz=pl.size*(1+0.2*o.depth)*pl.scale*(0.6+0.4*intro);
+    // 光晕
+    ctx.globalCompositeOperation='lighter';
+    const halo=ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,sz*5.4);
+    halo.addColorStop(0,pl.color+'bb');halo.addColorStop(0.22,pl.color+'55');
+    halo.addColorStop(0.5,pl.color+'22');halo.addColorStop(1,pl.color+'00');
+    ctx.fillStyle=halo;ctx.beginPath();ctx.arc(o.x,o.y,sz*5.4,0,6.283);ctx.fill();
+    // 星体
+    ctx.globalCompositeOperation='source-over';
+    const body=ctx.createRadialGradient(o.x-sz*0.35,o.y-sz*0.35,sz*0.1,o.x,o.y,sz);
+    body.addColorStop(0,'#ffffff');body.addColorStop(0.35,pl.color);body.addColorStop(1,shade(pl.color,-55));
+    ctx.fillStyle=body;ctx.beginPath();ctx.arc(o.x,o.y,sz,0,6.283);ctx.fill();
+    if(pl.id==='products'){
+      ctx.strokeStyle=pl.color+'aa';ctx.lineWidth=2;
+      ctx.save();ctx.translate(o.x,o.y);ctx.scale(1,0.4);
+      ctx.beginPath();ctx.arc(0,0,sz*1.9,0,6.283);ctx.stroke();ctx.restore();
+    }
+    // 卫星小星球（带图标）
+    for(const mn of pl.moons){
+      const mh=(hoverMoon&&hoverMoon.mn===mn)?1:0;
+      mn.hover+=(mh-mn.hover)*0.3; mn.scale+=((mh?2.6:1)-mn.scale)*0.3;
+      const ms=(4.6+pl.size*0.14)*mn.scale;
+      ctx.globalCompositeOperation='lighter';
+      const mg=ctx.createRadialGradient(mn._x,mn._y,0,mn._x,mn._y,ms*3);
+      mg.addColorStop(0,pl.color+'aa');mg.addColorStop(1,pl.color+'00');
+      ctx.fillStyle=mg;ctx.beginPath();ctx.arc(mn._x,mn._y,ms*3,0,6.283);ctx.fill();
+      ctx.globalCompositeOperation='source-over';
+      ctx.fillStyle='rgba(8,11,30,.72)';ctx.beginPath();ctx.arc(mn._x,mn._y,ms+1,0,6.283);ctx.fill();
+      ctx.globalAlpha=0.85+0.15*mn.hover;
+      ctx.font=`${ms*1.9}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(mn.ref.icon, mn._x, mn._y+1);
+      ctx.globalAlpha=1;ctx.textBaseline='alphabetic';
+    }
+    // 标签
+    const la=0.5+0.5*pl.hover;
+    ctx.globalAlpha=Math.max(0.32,la)*intro;ctx.textAlign='center';
+    ctx.font=`700 ${13+pl.hover*3}px Inter,"Noto Sans SC","Noto Sans JP",sans-serif`;ctx.fillStyle='#fff';
+    ctx.fillText(T(pl.ref.tag), o.x, o.y+sz+18);   // 大白话主标题
+    if(pl.hover>0.15){
+      ctx.globalAlpha=pl.hover*intro;
+      ctx.font='700 10px Orbitron, sans-serif';ctx.fillStyle=pl.color;
+      ctx.fillText(T(pl.ref.name)+'  ·  '+T(pl.ref.era), o.x, o.y+sz+34);  // 代号风味
+    }
+    ctx.globalAlpha=1;
+  }
+
+  // 中心恒星
+  const cs=1+0.06*Math.sin(time*1.4);
+  const coreHover=Math.hypot(mouse.x-cx,mouse.y-cy)<orbR*0.16;
+  ctx.globalCompositeOperation='lighter';
+  const sr=orbR*0.13*intro*(coreHover?1.15:1)*cs;
+  const sg=ctx.createRadialGradient(cx,cy,0,cx,cy,sr*2.6);
+  sg.addColorStop(0,'#fff');sg.addColorStop(0.3,'rgba(255,195,125,.85)');sg.addColorStop(1,'rgba(255,120,60,0)');
+  ctx.fillStyle=sg;ctx.beginPath();ctx.arc(cx,cy,sr*2.6,0,6.283);ctx.fill();
+  ctx.globalCompositeOperation='source-over';
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(cx,cy,sr,0,6.283);ctx.fill();
+  ctx.fillStyle='rgba(20,14,40,.9)';ctx.font=`900 ${sr*0.9}px Orbitron`;
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(CONTENT.core.initials,cx,cy+1);
+  ctx.textBaseline='alphabetic';
+
+  ctx.restore();          // 结束穿越镜头变换
+  drawWarpFX(cam);        // 光速拉丝 + 白闪（屏幕空间）
+
+  cv.style.cursor=(!warp.active && (hovered||hoverDust||hoverMoon||coreHover))?'pointer':'default';
+
+  // tooltip
+  const tip=document.getElementById('tip'), hv=hoverMoon||hoverDust;
+  if(hv){ const item=hoverMoon?hoverMoon.mn.ref:hoverDust.d.real;
+    tip.textContent=(hoverMoon?item.icon+'  ':'')+T(item.title);
+    tip.style.left=hv.x+'px';tip.style.top=hv.y+'px';tip.style.opacity=1; }
+  else tip.style.opacity=0;
+
+  requestAnimationFrame(frame);
+}
+
+function shade(hex,amt){
+  const n=parseInt(hex.slice(1),16);
+  let r=Math.max(0,Math.min(255,(n>>16)+amt)),
+      g=Math.max(0,Math.min(255,((n>>8)&255)+amt)),
+      b=Math.max(0,Math.min(255,(n&255)+amt));
+  return `rgb(${r},${g},${b})`;
+}
+
+/* ---------- 星际穿越镜头逻辑 ---------- */
+const WARP_IN=0.85, WARP_OUT=0.7;
+function updateWarp(){
+  if(!warp.active) return;
+  if(warp.phase==='in'){
+    warp.t=Math.min(1, warp.t+(1/60)/WARP_IN);
+    if(warp.t>=1 && !warp.opened){ warp.opened=true; warp.phase='hold';
+      if(warp.kind==='core') openCore(); else openPlanet(warp.target.ref); }
+  } else if(warp.phase==='out'){
+    warp.t=Math.max(0, warp.t-(1/60)/WARP_OUT);
+    if(warp.t<=0){ warp.active=false; warp.phase='idle'; warp.opened=false; }
+  }
+}
+function warpCam(){
+  if(!warp.active) return {s:1,px:cx,py:cy,panX:0,panY:0,ease:0};
+  const e=warp.t, ease=e*e*(3-2*e);
+  return {s:1+ease*7, px:warp.px, py:warp.py, panX:ease*(cx-warp.px), panY:ease*(cy-warp.py), ease};
+}
+function drawWarpFX(cam){
+  if(!warp.active || cam.ease<0.001) return;
+  const ox=warp.px+cam.panX, oy=warp.py+cam.panY, ease=cam.ease, n=170, maxLen=Math.max(W,H);
+  ctx.globalCompositeOperation='lighter';
+  for(let i=0;i<n;i++){
+    const a=(i/n)*6.283 + warp.t*2.2;
+    const len=maxLen*ease*(0.3+0.7*(((i*97)%100)/100));
+    const r0=(18+((i*53)%90))*ease;
+    const x0=ox+Math.cos(a)*r0, y0=oy+Math.sin(a)*r0;
+    const x1=ox+Math.cos(a)*(r0+len), y1=oy+Math.sin(a)*(r0+len);
+    const grd=ctx.createLinearGradient(x0,y0,x1,y1);
+    grd.addColorStop(0,warp.color+'00');
+    grd.addColorStop(1,(i%3)?'#ffffffcc':warp.color+'cc');
+    ctx.strokeStyle=grd; ctx.lineWidth=1.2*ease+0.3;
+    ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+  }
+  ctx.globalCompositeOperation='source-over';
+  if(ease>0.72){ ctx.fillStyle=`rgba(255,255,255,${(ease-0.72)/0.28*0.85})`; ctx.fillRect(0,0,W,H); }
+}
+function startWarp(pl,kind){
+  warp.active=true; warp.phase='in'; warp.t=0; warp.opened=false; warp.kind=kind;
+  if(kind==='core'){ warp.px=cx; warp.py=cy; warp.color='#ffb27a'; warp.target=null; }
+  else { warp.px=pl._sx??cx; warp.py=pl._sy??cy; warp.color=pl.color; warp.target=pl; }
+  playWhoosh();
+}
+
+/* ---------- 环境音效（Web Audio 实时合成，默认静音）---------- */
+let actx=null, master=null, soundOn=false, ambientStarted=false;
+function ensureAudio(){
+  if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return false; }
+    master=actx.createGain(); master.gain.value=0; master.connect(actx.destination); }
+  if(actx.state==='suspended') actx.resume();
+  return true;
+}
+function startAmbient(){
+  if(ambientStarted) return; ambientStarted=true;
+  const filt=actx.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=520; filt.Q.value=0.7; filt.connect(master);
+  [110,164.81,220,146.83].forEach((f,i)=>{
+    const o=actx.createOscillator(); o.type=(i%2)?'sine':'triangle';
+    o.frequency.value=f; o.detune.value=(i-1)*4;
+    const g=actx.createGain(); g.gain.value=0.4/(i+1); o.connect(g); g.connect(filt); o.start();
+  });
+  const lfo=actx.createOscillator(); lfo.frequency.value=0.045;
+  const lg=actx.createGain(); lg.gain.value=260; lfo.connect(lg); lg.connect(filt.frequency); lfo.start();
+}
+function setSound(on){
+  soundOn=on;
+  if(on){ if(!ensureAudio()){ soundOn=false; return; } startAmbient();
+    master.gain.linearRampToValueAtTime(0.11, actx.currentTime+2.5); }
+  else if(actx){ master.gain.linearRampToValueAtTime(0, actx.currentTime+0.5); }
+  const b=document.getElementById('soundbtn'); b.textContent=on?'♪ ON':'♪ OFF'; b.classList.toggle('on',on);
+}
+function playWhoosh(){
+  if(!soundOn || !actx) return;
+  const now=actx.currentTime, dur=0.9;
+  const buf=actx.createBuffer(1, Math.floor(actx.sampleRate*dur), actx.sampleRate);
+  const d=buf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  const src=actx.createBufferSource(); src.buffer=buf;
+  const bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=0.9;
+  bp.frequency.setValueAtTime(180,now); bp.frequency.exponentialRampToValueAtTime(2600,now+dur*0.75);
+  const g=actx.createGain(); g.gain.setValueAtTime(0.0001,now);
+  g.gain.exponentialRampToValueAtTime(0.32,now+0.16); g.gain.exponentialRampToValueAtTime(0.0001,now+dur);
+  src.connect(bp);bp.connect(g);g.connect(master); src.start(now); src.stop(now+dur);
+}
+document.getElementById('soundbtn').onclick=()=>setSound(!soundOn);
+
+/* ---------- 交互 ---------- */
+cv.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;});
+cv.addEventListener('mouseleave',()=>{mouse.x=mouse.y=-9999;});
+cv.addEventListener('click',()=>{
+  if(warp.active) return;
+  if(hoverMoon){ const l=hoverMoon.mn.ref.link; if(l) window.open(l, l.startsWith('mailto')?'_self':'_blank'); return; }
+  if(hoverDust){ if(hoverDust.d.real.link) window.open(hoverDust.d.real.link,'_blank'); return; }
+  if(hovered){ startWarp(hovered,'planet'); return; }
+  if(Math.hypot(mouse.x-cx,mouse.y-cy)<orbR*0.16) startWarp(null,'core');
+});
+cv.addEventListener('touchstart',e=>{const t=e.touches[0];mouse.x=t.clientX;mouse.y=t.clientY;},{passive:true});
+
+/* ---------- 面板 ---------- */
+const overlay=document.getElementById('overlay'), sheet=document.getElementById('sheet');
+function openPlanet(p){
+  sheet.style.setProperty('--accent',p.color);
+  sheet.innerHTML=`<div class="landing"><div class="planetOrb"></div>
+      <div class="sheetHead">
+        <span class="sheetKicker">${T(p.name)} · ${T(p.era)}</span>
+        <span class="sheetTitle">${T(p.tag)}</span>
+        <span class="sheetSub">${T(p.label)}</span></div></div>
+    <div class="sheetIntro">${T(p.intro)}</div>${renderBody(p)}`;
+  show();
+}
+function openCore(){
+  const c=CONTENT.core;
+  sheet.style.setProperty('--accent','#ffb27a');
+  sheet.innerHTML=`<div class="landing"><div class="planetOrb">${c.initials}</div>
+      <div class="sheetHead">
+        <span class="sheetKicker">${T(c.kicker)}</span>
+        <span class="sheetTitle">${T(c.name)}</span></div></div>
+    <div class="sheetIntro">${T(c.role)}</div>`+
+    c.manifesto.map(m=>`<div class="stmt">${T(m)}</div>`).join('');
+  show();
+}
+function show(){overlay.classList.add('open');document.body.style.overflow='hidden';}
+function closeSheet(){ overlay.classList.remove('open'); document.body.style.overflow='';
+  if(warp.active){ warp.phase='out'; }   // 反向飞回银河
+}
+document.getElementById('closeBtn').onclick=closeSheet;
+overlay.addEventListener('click',e=>{if(e.target===overlay)closeSheet();});
+addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet();});
+
+function renderBody(p){
+  switch(p.type){
+    case 'timeline':
+      return `<div class="tl">`+p.items.map(it=>`<div class="node"><div class="date">${it.date}</div>
+        <div class="t">${T(it.title)}</div><div class="d">${T(it.desc)}</div></div>`).join('')+`</div>`;
+    case 'products':
+      return `<a class="mainCard" href="${p.main.link}" target="_blank" rel="noopener">
+        <div class="tag">CORE PRODUCT</div><div class="cn">${T(p.main.name)}</div>
+        <div class="cd">${T(p.main.desc)}</div></a><div class="grid">`+
+        p.satellites.map(s=>`<a class="card" href="${s.link}" target="_blank" rel="noopener">
+        <div class="cn">${T(s.name)}</div><div class="cd">${T(s.desc)}</div></a>`).join('')+`</div>`;
+    case 'statements':
+      return p.items.map(s=>`<div class="stmt">${T(s)}</div>`).join('');
+    case 'gallery':
+      return `<div class="grid">`+p.items.map(it=>`<div class="card">
+        <div class="cn">${T(it.title)}</div><div class="cd">${T(it.note)}</div></div>`).join('')+`</div>`;
+    case 'links':
+      return p.items.map(l=>`<a class="linkRow" href="${l.link}" target="_blank" rel="noopener">
+        <span>${l.name}</span><span class="h">${l.handle} ↗</span></a>`).join('');
+    case 'contact':
+      return `<div class="grid">`+p.channels.map(c=>`<a class="card" href="${c.link}">
+        <div class="cn">${T(c.role)}</div><div class="cd">${T(c.note)}</div></a>`).join('')+`</div>`;
+    default:return '';
+  }
+}
+
+/* ---------- 三语 ---------- */
+function renderStatic(){
+  document.documentElement.lang=LANG;
+  document.getElementById('introKicker').textContent=T(CONTENT.core.kicker);
+  document.getElementById('introName').textContent=T(CONTENT.core.name);
+  document.getElementById('introTag').textContent=T(CONTENT.core.tagline);
+  document.getElementById('introCred').textContent=T(CONTENT.core.creds);
+}
+function buildLangSwitch(){
+  const box=document.getElementById('langsw');box.innerHTML='';
+  CONTENT.langs.forEach(l=>{
+    const b=document.createElement('button');b.textContent=l.label;
+    if(l.id===LANG)b.classList.add('on');
+    b.onclick=()=>{LANG=l.id;buildLangSwitch();renderStatic();if(overlay.classList.contains('open'))closeSheet();};
+    box.appendChild(b);
+  });
+}
+
+/* ---------- 启动 ---------- */
+function boot(){ resize(); seedPlanets(); buildLangSwitch(); renderStatic(); requestAnimationFrame(frame); }
+// 等字体真正加载完再开画，消除刚打开时"字体先是备用体、1秒后又跳成另一种"的闪动(FOUT)
+if(document.fonts && document.fonts.load){
+  let started=false; const go=()=>{ if(!started){ started=true; boot(); } };
+  Promise.all([
+    document.fonts.load('900 24px Orbitron'),
+    document.fonts.load('700 12px Orbitron'),
+    document.fonts.load('400 14px Inter')
+  ]).then(go).catch(go);
+  setTimeout(go, 1500);   // 兜底：字体加载慢也不至于白屏
+} else boot();
+</script>
+</body>
+</html>
