@@ -7,6 +7,17 @@ An interactive personal "world model": a living galaxy where each planet is a di
 - Interstellar "warp" transition into each section
 - Optional ambient sound (synthesized, off by default)
 
+Each section opens into its **own bespoke interactive instrument** (all vanilla canvas/SVG — still no dependencies):
+
+| Planet | Experience |
+|---|---|
+| **Life** | An interactive rotating **globe** of every place travelled — drag to spin, tap a pin to fly it front-and-center and open a photo card (ready for your images). |
+| **Career** | *Starline* — a comet descends a constellation, igniting each career-star in turn. |
+| **Products** | *Reactor Core* — satellites orbit a power core; touch one and a beam fires to it. |
+| **Content** | *Broadcast Deck* — an "ON AIR" channel rack with live equalizers + sonar pings. |
+| **Values** | *Belief Compass* — a needle you can aim; it settles on each belief and reads it aloud in the center. |
+| **Contact** | *The Threshold* — a wormhole that cranes toward whichever door you choose. |
+
 All editable content lives in **one block** at the top of `index.html` — the `CONTENT` object. Add a job, a product, a value, a travel pin, or a footprint by editing that block only; the render engine below it rarely changes.
 
 ---
@@ -71,7 +82,23 @@ Every future `git push` to `main` auto-deploys. Add a custom domain (e.g. `eason
 Open `index.html`, find the `CONTENT = { ... }` block at the top (clearly marked), and edit it. Examples:
 
 - **Add a product** → add an entry to the `products` planet's `satellites` and `moons`.
-- **Add a travel pin** → add to the `life` planet's `items` / `moons`, or to `footprints`.
 - **Add a value** → add a line to the `values` planet's `items`.
+- **Add a travel pin** → add to the `life` planet's `places` array (see below).
 
 Commit and push — Vercel redeploys automatically.
+
+### Travel pins & photos (the globe)
+
+Every dot on the globe is one entry in the `life` planet's **`places`** array. To add a place, add one line:
+
+```js
+{ name:{en:"Lisbon · Portugal", zh:"里斯本 · 葡萄牙", ja:"リスボン · ポルトガル"},
+  note:{en:"Europe.", zh:"欧洲。", ja:"ヨーロッパ。"},
+  lat:38.72, lng:-9.14, emoji:"🚋", img:"" },
+```
+
+- `lat` / `lng` — decimal degrees (north +, east +). Grab them from Google Maps → right-click → the two numbers.
+- `emoji` — shown on the placeholder card and the companion list.
+- `img` — **leave `""` for now**; the card shows a "photo coming" placeholder. When you have a picture, drop it in the repo (e.g. `img/lisbon.jpg`) and set `img:"img/lisbon.jpg"` (or any URL) — it swaps in automatically.
+
+The "25 / 100 countries" gauge is the `progress:{ visited, goal }` line just above `places` — bump `visited` as the list grows.
