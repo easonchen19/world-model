@@ -49,6 +49,13 @@ const CONTENT = {
     },
     // 首页轻声问候（淡入、克制，不喧宾夺主）
     welcome:{ en:"Welcome to my universe", zh:"欢迎来到我的宇宙", ja:"私の宇宙へようこそ" },
+    // 此刻状态：我现在在哪、在做什么（手动维护——换城市改这里即可；tz 用 IANA 时区名，当地时间自动实时显示）
+    now:{
+      place:{ en:"Bali, Indonesia", zh:"巴厘岛 · 印尼", ja:"バリ · インドネシア" },
+      emoji:"🌴",
+      tz:"Asia/Makassar",
+      doing:{ en:"Building Jaguar AI", zh:"正在打造 Jaguar AI", ja:"Jaguar AI を構築中" }
+    },
     manifesto:[
       { en:"I built Jaguar AI so no founder ships on a broken foundation.",
         zh:"我做 Jaguar AI，是为了让没有一个创始人建在破碎的地基上。",
@@ -364,6 +371,13 @@ body{color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-font-smoot
 /* 字体就绪前隐藏 DOM 文案，就绪后整体淡入（画布不受影响，立即开画） */
 .topbar,.intro{opacity:0;transition:opacity .9s ease .05s}
 body.fonts-in .topbar,body.fonts-in .intro{opacity:1}
+/* 中心面板的"此刻"状态胶囊 */
+.coreNow{display:inline-flex;align-items:center;gap:9px;margin:2px 0 20px;padding:9px 16px;
+  border:1px solid rgba(255,209,102,.35);border-radius:999px;background:rgba(255,209,102,.06);
+  font-family:var(--display);font-size:11px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase}
+.coreNow b{font-weight:700;letter-spacing:.06em}
+.cnDot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 9px var(--gold);
+  animation:livePulse 2.2s ease-in-out infinite;flex:0 0 auto}
 /* 键盘焦点环：工程感的可达性 */
 .card:focus-visible,.linkRow:focus-visible,.mainCard:focus-visible,.closeBtn:focus-visible,
 .langsw button:focus-visible,.soundbtn:focus-visible{outline:1px solid var(--accent,#94a0cf);outline-offset:3px}
@@ -444,6 +458,7 @@ const cv=document.getElementById('sky'), ctx=cv.getContext('2d');
 let W,H,cx,cy,DPR,discR,orbR;
 const SY=0.46;
 let time=0, intro=0;
+let nowClockStr='', nowClockT=-9;   // 中心"此刻"状态的当地时间（每秒刷新一次缓存）
 const mouse={x:-9999,y:-9999};
 // 星际穿越镜头状态
 let warp={active:false,phase:'idle',t:0,px:0,py:0,color:'#fff',target:null,kind:null,opened:false};
@@ -757,6 +772,25 @@ function frame(){
   ctx.fillStyle='rgba(20,14,40,.9)';ctx.font=`900 ${sr*0.9}px Orbitron`;
   ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(CONTENT.core.initials,cx,cy+1);
   ctx.textBaseline='alphabetic';
+  // 此刻状态：恒星下方一行金色小字 "● 此刻 · 巴厘岛 · 14:32"（当地时间实时跳动 → 活着的中心）
+  if(CONTENT.core.now && intro>0.5){
+    if(time-nowClockT>1){ nowClockT=time;
+      try{ nowClockStr=new Intl.DateTimeFormat(LANG==='zh'?'zh-CN':LANG==='ja'?'ja-JP':'en-GB',
+        {hour:'2-digit',minute:'2-digit',hour12:false,timeZone:CONTENT.core.now.tz}).format(new Date()); }
+      catch(e){ nowClockStr=''; } }
+    const lbl=T({en:'NOW',zh:'此刻',ja:'いま'})+' · '+T(CONTENT.core.now.place)+(nowClockStr?' · '+nowClockStr:'');
+    const ny=cy-Math.max(sr*2.9,74);   // 悬在星系核心上方（下方会与英雄区文字撞位）
+    ctx.font='700 10.5px Orbitron,"Noto Sans SC","Noto Sans JP",sans-serif';
+    ctx.textAlign='center';
+    const lw=ctx.measureText(lbl).width;
+    ctx.globalAlpha=0.78*(intro-0.5)*2;
+    ctx.fillStyle='#ffd166';
+    ctx.fillText(lbl,cx,ny);
+    const pu2=0.55+0.45*Math.sin(time*2.2);
+    ctx.globalAlpha=(0.3+0.5*pu2)*(intro-0.5)*2;
+    ctx.beginPath();ctx.arc(cx-lw/2-9,ny-3.5,2.2,0,6.283);ctx.fill();
+    ctx.globalAlpha=1;
+  }
 
   ctx.restore();          // 结束穿越镜头变换
   drawWarpFX(cam);        // 光速拉丝 + 白闪（屏幕空间）
@@ -977,8 +1011,16 @@ function openCore(){
         <span class="sheetKicker">${T(c.kicker)}</span>
         <span class="sheetTitle">${T(c.name)}</span></div></div>
     <div class="sheetIntro">${T(c.role)}</div>`+
+    (c.now?`<div class="coreNow"><span class="cnDot"></span>${T(c.now.doing)} · ${T(c.now.place)} ${c.now.emoji||''} · <b id="coreClock">--:--</b></div>`:'')+
     c.manifesto.map(m=>`<div class="stmt">${T(m)}</div>`).join('');
   show();
+  if(c.now){
+    const clk=sheet.querySelector('#coreClock');
+    const upd=()=>{ try{ clk.textContent=new Intl.DateTimeFormat(LANG==='zh'?'zh-CN':LANG==='ja'?'ja-JP':'en-GB',
+      {hour:'2-digit',minute:'2-digit',hour12:false,timeZone:c.now.tz}).format(new Date()); }catch(e){ clk.textContent=''; } };
+    upd(); const iv=setInterval(upd,15000);
+    activeDispose=()=>clearInterval(iv);   // 关面板/切语言时清掉时钟
+  }
 }
 function show(){overlay.classList.add('open');document.body.style.overflow='hidden';}
 function closeSheet(){
