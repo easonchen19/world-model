@@ -81,7 +81,7 @@ Every future `git push` to `main` auto-deploys.
 
 ## Live visitor telemetry (the corner "LIVE" HUD)
 
-The bottom-left HUD (a radar + `SIGNALS` / `COUNTRIES` counts + a live arrivals ticker) is powered by a tiny serverless function at [`api/visit.js`](api/visit.js). On each load it:
+The bottom-left HUD (a **mini rotating Earth** + `SIGNALS` / `COUNTRIES` counts + a live arrivals ticker) is powered by a tiny serverless function at [`api/visit.js`](api/visit.js). The globe carries a dot-matrix world landmask (96×48, hex-packed, generated at dev time from GeoJSON — no runtime requests); it aims itself at the visitor's detected location and pulses a cyan beacon there, with recent visitors as faint white pins. On each load it:
 
 - derives **coarse geo** (country / city / lat-lng) from Vercel's edge headers — no third-party geo API;
 - logs the visit and reads back aggregate stats from **Upstash Redis**.

@@ -449,9 +449,9 @@ const mouse={x:-9999,y:-9999};
 let warp={active:false,phase:'idle',t:0,px:0,py:0,color:'#fff',target:null,kind:null,opened:false};
 
 /* ---------- 星系盘背景 ---------- */
-let discStars=[], nebulae=[], dust=[];
+let discStars=[], nebulae=[], dust=[], armHaze=[], bgPlanets=[];
 function seedGalaxy(){
-  const N=Math.min(2800, Math.floor(innerWidth*innerHeight/750));
+  const N=Math.min(3400, Math.floor(innerWidth*innerHeight/640));   // 更密的星，宇宙不再空旷
   const ARMS=2, TIGHT=2.7, maxR=1.55;              // maxR>1 → 旋臂溢出屏幕，填满四边
   discStars=[];
   for(let i=0;i<N;i++){
@@ -485,6 +485,25 @@ function seedGalaxy(){
     const ang=Math.random()*6.283, isReal=i<real.length;
     dust.push({ r:rr, ang, size:isReal?2.2:Math.random()*1.1+0.3, tw:Math.random()*6.28, sp:0.6+Math.random(),
       real:isReal?real[i]:null, col:isReal?'#f1e6ff':'#d8d2ff' });
+  }
+  // 旋臂雾带：贴着两条旋臂的暗紫光斑，整层刚性旋转 → "漩涡中的银河"的臂膀
+  armHaze=[];
+  const HN=Math.min(700, Math.floor(innerWidth*innerHeight/1900));
+  for(let i=0;i<HN;i++){
+    const rr=Math.pow(Math.random(),0.55);
+    const arm=Math.floor(Math.random()*ARMS);
+    const ang=arm*(2*Math.PI/ARMS)+rr*TIGHT*Math.PI+(Math.random()-0.5)*((1-rr)*0.34+0.06)*Math.PI;
+    armHaze.push({ r:rr*1.45, ang, size:0.012+Math.random()*0.026, a:0.05+Math.random()*0.07, k:i%2 });
+  }
+  // 背景小行星：宇宙里"别人的世界"——小而暗，多数嵌在旋臂里，永远不抢主角
+  bgPlanets=[];
+  const BP=Math.min(64, 26+Math.floor(innerWidth*innerHeight/26000));
+  for(let i=0;i<BP;i++){
+    const rr=0.18+Math.pow(Math.random(),0.8)*1.22;
+    const arm=Math.floor(Math.random()*ARMS);
+    const near=Math.random()<0.72;
+    const ang=near? arm*(2*Math.PI/ARMS)+rr*TIGHT*Math.PI+(Math.random()-0.5)*0.5 : Math.random()*6.283;
+    bgPlanets.push({ r:rr, ang, size:1.5+Math.random()*2.4, a:0.32+Math.random()*0.3, c:i%5, sp:0.9+Math.random()*0.25 });
   }
   buildGalaxySprites();
 }
@@ -524,6 +543,23 @@ function buildGalaxySprites(){
   SPR.sun=radialSprite(256,[[0,'#fff'],[0.3,'rgba(255,195,125,.85)'],[1,'rgba(255,120,60,0)']]);
   const nk={};
   for(const n of nebulae){const k=n.col+'|'+n.a;n._spr=nk[k]||(nk[k]=radialSprite(256,[[0,`rgba(${n.col},${n.a})`],[1,`rgba(${n.col},0)`]]));}
+  // 旋臂雾贴图 + 背景小行星贴图
+  SPR.haze=[ radialSprite(64,[[0,'rgba(139,92,246,0.55)'],[1,'rgba(139,92,246,0)']]),
+             radialSprite(64,[[0,'rgba(99,102,241,0.5)'],[1,'rgba(99,102,241,0)']]) ];
+  const bpCols=['196,181,253','165,180,252','240,171,252','148,163,184','103,232,249'];
+  SPR.bp=bpCols.map(c=>radialSprite(32,[[0,'rgba(255,255,255,.9)'],[0.35,`rgba(${c},.8)`],[1,`rgba(${c},0)`]]));
+  // 把整个雾带烘焙成一张大图：逐帧只需一次带旋转的 drawImage（低分辨率即可，雾本来就是糊的）
+  const hR=discR*1.5, res=Math.max(560, Math.floor(hR/3)), k=res/hR;
+  const hc=document.createElement('canvas'); hc.width=hc.height=res*2;
+  const hg=hc.getContext('2d'); hg.globalCompositeOperation='lighter';
+  for(const hz of armHaze){
+    const x=res+Math.cos(hz.ang)*hz.r*discR*k, y=res+Math.sin(hz.ang)*hz.r*discR*k;
+    const s=hz.size*discR*2.2*k;
+    hg.globalAlpha=hz.a;
+    hg.drawImage(SPR.haze[hz.k], x-s, y-s, s*2, s*2);
+  }
+  hg.globalAlpha=1;
+  SPR.hazeLayer=hc; SPR.hazeR=hR;
 }
 function buildPlanetSprites(){
   for(const pl of planets){
@@ -549,9 +585,10 @@ function resize(){
   cx=W/2; cy=H*0.5;
   discR=Math.max(W,H)*0.82;          // 背景盘：用长边，铺满并溢出
   orbR=Math.min(W,H)*0.48;           // 行星轨道：用短边，保证在屏内（拉宽给呼吸感）
-  seedGalaxy();
 }
-addEventListener('resize',resize);
+// 几何(尺寸/DPR)每次事件立即更新；重播种+雾带烘焙(大画布分配)防抖到拖拽结束后执行一次
+let _rzT=null;
+addEventListener('resize',()=>{ resize(); clearTimeout(_rzT); _rzT=setTimeout(seedGalaxy,200); });
 
 /* ---------- 主循环 ---------- */
 let hovered=null, hoverDust=null, hoverMoon=null;
@@ -588,6 +625,14 @@ function frame(){
     if(n._spr) ctx.drawImage(n._spr,x-rad,y-rad,rad*2,rad*2);
   }
 
+  // 旋臂雾带：整层随星盘刚性旋转（单次 drawImage）
+  if(SPR.hazeLayer){
+    ctx.save();
+    ctx.translate(cx,cy); ctx.scale(intro,intro*SY); ctx.rotate(rot);
+    ctx.drawImage(SPR.hazeLayer,-SPR.hazeR,-SPR.hazeR,SPR.hazeR*2,SPR.hazeR*2);
+    ctx.restore();
+  }
+
   // 背景星
   for(const s of discStars){
     const a=s.ang+rot*(1.2-s.r*0.3), R=s.r*discR*intro;
@@ -595,6 +640,15 @@ function frame(){
     const tw=0.55+0.45*Math.sin(time*s.sp+s.tw);
     ctx.globalAlpha=tw*intro*(0.55+s.warm*0.45);
     ctx.fillStyle=s.col;ctx.beginPath();ctx.arc(x,y,s.size*(0.8+0.4*intro),0,6.283);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+
+  // 背景小行星（差速旋转 → 视差纵深；小而暗，不与主角争辉）
+  for(const bp of bgPlanets){
+    const a=bp.ang+rot*bp.sp*(1.15-bp.r*0.2), R=bp.r*discR*intro;
+    const x=cx+R*Math.cos(a), y=cy+R*SY*Math.sin(a), s=bp.size*(0.8+0.4*intro);
+    ctx.globalAlpha=bp.a*intro;
+    ctx.drawImage(SPR.bp[bp.c], x-s*2.4, y-s*2.4, s*4.8, s*4.8);
   }
   ctx.globalAlpha=1;
 
@@ -842,9 +896,18 @@ function startAmbient(){
 }
 function setSound(on){
   soundOn=on;
+  // 先取消旧的音量自动化并锚定当前值——否则 2.5s 渐入期间点静音，会被残留的
+  // linearRamp 事件"顶回来"（按钮显示 OFF 但音乐照播）
   if(on){ if(!ensureAudio()){ soundOn=false; return; } startAmbient();
-    master.gain.linearRampToValueAtTime(0.11, actx.currentTime+2.5); }
-  else if(actx){ master.gain.linearRampToValueAtTime(0, actx.currentTime+0.5); }
+    const now=actx.currentTime;
+    master.gain.cancelScheduledValues(now);
+    master.gain.setValueAtTime(master.gain.value, now);
+    master.gain.linearRampToValueAtTime(0.11, now+2.5); }
+  else if(actx){
+    const now=actx.currentTime;
+    master.gain.cancelScheduledValues(now);
+    master.gain.setValueAtTime(master.gain.value, now);
+    master.gain.linearRampToValueAtTime(0, now+0.5); }
   const b=document.getElementById('soundbtn'); b.textContent=on?'♪ ON':'♪ OFF'; b.classList.toggle('on',on);
 }
 function playWhoosh(){
@@ -1673,7 +1736,7 @@ function injectFXStyles(){
   if(!css) return;
   const st=document.createElement('style'); st.id='fx-styles'; st.textContent=css; document.head.appendChild(st);
 }
-function boot(){ resize(); seedPlanets(); injectFXStyles(); buildLangSwitch(); renderStatic(); requestAnimationFrame(frame); }
+function boot(){ resize(); seedGalaxy(); seedPlanets(); injectFXStyles(); buildLangSwitch(); renderStatic(); requestAnimationFrame(frame); }
 // 立即开画：星系不等字体（画布文字每帧重绘，字体到位后自然换上）。
 // DOM 文案（英雄区/顶栏）等字体就绪后整体淡入，避免"备用体→正式体"的跳变。
 boot();
@@ -1697,46 +1760,89 @@ if(document.fonts && document.fonts.load){
         elCountries=document.getElementById('liveCountries'), elStats=document.getElementById('liveStats'),
         elTick=document.getElementById('liveTicker'), overlay=document.getElementById('overlay');
   const CY='34,211,238';
-  let W,H,DPR, pins=[], recent=[], sweep=0, raf=null, tickIdx=0, started=false;
+  let W,H,DPR, pins=[], recent=[], raf=null, tickIdx=0, started=false;
+  let youVec=null, yaw=0.8, tilt=0.35, yawT=null, tiltT=0.35, sphere=null;
+
+  // —— 内嵌世界海陆栅格（96×48，hex 打包；开发期由 GeoJSON 光栅化生成，无运行时请求）——
+  const LCOLS=96, LROWS=48;
+  const LAND_HEX='000000000000000000000000000000080f80000000000000000003fffff01a0c00e000000001f7ffffe01800a0fc04000003f7f07fe000032fffe7008ffffffc7fc00fe1ffffffffffffffdf3e701fffffffffff1fffff1e38007fffffffffff061fff1f00027bffffffffb00007ffff80077ffffffffc600007ffffc007fffffffffe000001ffffc001fffffffffa000001fffe0007ff3ffffff6000001fff000072dfbffffc4000001fff00003e1fffffffc0000007fe00007ffffffffb00000007e20000fffffffff800000001c30000fffffffff800002000c90001fffff1ffc0000000007d0001ffffe1c788000000001c0001ffffc0c3880000000007f000ffffc0c29c0000000001fc007fff8043300000000001fe0003ff0003780000000003ff8003fe00017bc800000003ffe001fe0001c8fc00000001ffe001fe0000245200000001ffc001fe400003e000000000ffc001ffc0000fe0100000007fc001fd80001ff0000000007f0000fd80003ff8000000007e0000f800003ff8000000007e00007000001ff800000000fc0000400000107020000000f80000000000002030000000e00000000000001040000000e000000000000000c0000000c80000000200000000000000e000000000000000000000000000000000000000000000000000000000000000000000003000000020116f8000000000700007fffefffffe00000cfff000ffffffffffffc03fffffc11fffffffffffff005ffffff77ffffffffffffe0f1ffffffffffffffffffffff000000000000000000000000';
+  const landVec=(()=>{ const out=[]; let bits='';
+    for(const ch of LAND_HEX) bits+=parseInt(ch,16).toString(2).padStart(4,'0');
+    for(let r=0;r<LROWS;r++)for(let c=0;c<LCOLS;c++){ if(bits[r*LCOLS+c]==='1'){
+      const la=(90-(r+0.5)*180/LROWS)*Math.PI/180, lo=(-180+(c+0.5)*360/LCOLS)*Math.PI/180;
+      out.push([Math.cos(la)*Math.sin(lo), Math.sin(la), Math.cos(la)*Math.cos(lo)]);
+    }} return out; })();
+  const toVec=(lat,lng)=>{ const la=lat*Math.PI/180, lo=lng*Math.PI/180;
+    return [Math.cos(la)*Math.sin(lo), Math.sin(la), Math.cos(la)*Math.cos(lo)]; };
 
   function size(){ DPR=Math.min(devicePixelRatio||1,2); W=radar.clientWidth||180; H=radar.clientHeight||92;
-    radar.width=W*DPR; radar.height=H*DPR; rctx.setTransform(DPR,0,0,DPR,0,0); rebuildPins(); }
+    radar.width=W*DPR; radar.height=H*DPR; rctx.setTransform(DPR,0,0,DPR,0,0);
+    const r=Math.min(W,H)*0.46, px=Math.max(2,Math.ceil(r*2*DPR));
+    sphere=document.createElement('canvas'); sphere.width=sphere.height=px;
+    const g=sphere.getContext('2d'), rr=px/2;
+    const body=g.createRadialGradient(rr-rr*0.35,rr-rr*0.4,rr*0.1,rr,rr,rr);
+    body.addColorStop(0,'#1b2856'); body.addColorStop(0.55,'#0b1233'); body.addColorStop(1,'#060a1f');
+    g.fillStyle=body; g.beginPath(); g.arc(rr,rr,rr,0,6.283); g.fill();
+  }
   const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  const rnd=(seed)=>{ const x=Math.sin(seed*99.7)*43758.5; return x-Math.floor(x); };
-  function bearing(v,i){ const lng=(v&&v.lng!=null)?v.lng:(rnd(i+1)*360-180); return (lng+180)/360*6.283 - 1.5708; }
 
   function rebuildPins(){
-    const cx=W/2, cy=H/2, R=Math.min(W,H)*0.44;
-    pins = recent.slice(0,14).map((v,i)=>{
-      const a=bearing(v,i), rr=R*(0.32 + (i/14)*0.62);
-      return { x:cx+Math.cos(a)*rr, y:cy+Math.sin(a)*rr*0.62, life:1-i/17, v };
-    });
+    pins=recent.slice(0,20).filter(v=>v&&v.lat!=null&&v.lng!=null).map((v,i)=>({v:toVec(v.lat,v.lng), life:1-i/24}));
   }
+  function aimAt(lat,lng){ youVec=toVec(lat,lng);
+    yawT=-lng*Math.PI/180; tiltT=Math.max(-1.1,Math.min(1.1,lat*Math.PI/180)); }
   function draw(t){
     raf=requestAnimationFrame(draw);
     if(overlay && overlay.classList.contains('open')) return;   // 面板打开时不画，省电
     rctx.clearRect(0,0,W,H);
-    const cx=W/2, cy=H/2, R=Math.min(W,H)*0.46;
-    rctx.strokeStyle='rgba(148,160,207,.13)'; rctx.lineWidth=1;
-    for(const f of [0.4,0.72,1]){ rctx.beginPath(); rctx.ellipse(cx,cy,R*f,R*f*0.62,0,0,6.283); rctx.stroke(); }
-    sweep+=0.011;
-    const ex=cx+Math.cos(sweep)*R, ey=cy+Math.sin(sweep)*R*0.62;
-    const sg=rctx.createLinearGradient(cx,cy,ex,ey);
-    sg.addColorStop(0,`rgba(${CY},.32)`); sg.addColorStop(1,`rgba(${CY},0)`);
-    rctx.strokeStyle=sg; rctx.lineWidth=1.4; rctx.beginPath(); rctx.moveTo(cx,cy); rctx.lineTo(ex,ey); rctx.stroke();
+    const cx=W/2, cy=H/2, r=Math.min(W,H)*0.46;
+    // 相机：定位到访客后带轻微呼吸摆动；未定位时缓慢自转
+    if(yawT!=null){ yaw+=(yawT+Math.sin(t/5200)*0.10-yaw)*0.05; tilt+=(tiltT-tilt)*0.05; }
+    else yaw+=0.0045;
+    const cyw=Math.cos(yaw), syw=Math.sin(yaw), ct=Math.cos(tilt), st=Math.sin(tilt);
+    // 大气辉光 + 球体
     rctx.globalCompositeOperation='lighter';
-    const cg=rctx.createRadialGradient(cx,cy,0,cx,cy,11);
-    cg.addColorStop(0,`rgba(${CY},.55)`); cg.addColorStop(1,`rgba(${CY},0)`);
-    rctx.fillStyle=cg; rctx.beginPath(); rctx.arc(cx,cy,11,0,6.283); rctx.fill();
-    for(const p of pins){
-      const pulse=0.6+0.4*Math.sin(t/520+p.x*0.3);
-      const g=rctx.createRadialGradient(p.x,p.y,0,p.x,p.y,5.5);
-      g.addColorStop(0,`rgba(200,235,255,${0.55*p.life*pulse})`); g.addColorStop(1,'rgba(200,235,255,0)');
-      rctx.fillStyle=g; rctx.beginPath(); rctx.arc(p.x,p.y,5.5,0,6.283); rctx.fill();
-    }
+    const ag=rctx.createRadialGradient(cx,cy,r*0.85,cx,cy,r*1.25);
+    ag.addColorStop(0,`rgba(${CY},0.12)`); ag.addColorStop(1,`rgba(${CY},0)`);
+    rctx.fillStyle=ag; rctx.beginPath(); rctx.arc(cx,cy,r*1.25,0,6.283); rctx.fill();
     rctx.globalCompositeOperation='source-over';
-    rctx.fillStyle='#fff'; rctx.beginPath(); rctx.arc(cx,cy,2.1,0,6.283); rctx.fill();
-    for(const p of pins){ rctx.fillStyle=`rgba(255,255,255,${0.75*p.life})`; rctx.beginPath(); rctx.arc(p.x,p.y,1.2,0,6.283); rctx.fill(); }
+    if(sphere) rctx.drawImage(sphere,cx-r,cy-r,r*2,r*2);
+    // 大陆点阵（背面剔除，亮度随朝向衰减）
+    rctx.fillStyle='rgb(158,178,236)';
+    for(const v of landVec){
+      const x1=v[0]*cyw+v[2]*syw, z1=-v[0]*syw+v[2]*cyw;
+      const y2=v[1]*ct-z1*st, z2=v[1]*st+z1*ct;
+      if(z2<=0.04) continue;
+      rctx.globalAlpha=0.15+0.5*z2;
+      rctx.fillRect(cx+x1*r-0.55, cy-y2*r-0.55, 1.1, 1.1);
+    }
+    rctx.globalAlpha=1;
+    // 最近访客针脚（白点）
+    for(const p of pins){ const v=p.v;
+      const x1=v[0]*cyw+v[2]*syw, z1=-v[0]*syw+v[2]*cyw;
+      const y2=v[1]*ct-z1*st, z2=v[1]*st+z1*ct;
+      if(z2<=0.05) continue;
+      rctx.fillStyle=`rgba(235,244,255,${(0.35+0.5*z2)*p.life})`;
+      rctx.beginPath(); rctx.arc(cx+x1*r, cy-y2*r, 1.1, 0, 6.283); rctx.fill();
+    }
+    // 你的位置：青色脉冲信标
+    if(youVec){ const v=youVec;
+      const x1=v[0]*cyw+v[2]*syw, z1=-v[0]*syw+v[2]*cyw;
+      const y2=v[1]*ct-z1*st, z2=v[1]*st+z1*ct;
+      if(z2>0){ const sx=cx+x1*r, sy=cy-y2*r, pu=(t/1400)%1;
+        rctx.strokeStyle=`rgba(${CY},${0.55*(1-pu)})`; rctx.lineWidth=1.2;
+        rctx.beginPath(); rctx.arc(sx,sy,2+pu*7,0,6.283); rctx.stroke();
+        rctx.globalCompositeOperation='lighter';
+        const g=rctx.createRadialGradient(sx,sy,0,sx,sy,6);
+        g.addColorStop(0,`rgba(${CY},.85)`); g.addColorStop(1,`rgba(${CY},0)`);
+        rctx.fillStyle=g; rctx.beginPath(); rctx.arc(sx,sy,6,0,6.283); rctx.fill();
+        rctx.globalCompositeOperation='source-over';
+        rctx.fillStyle='#eafcff'; rctx.beginPath(); rctx.arc(sx,sy,1.6,0,6.283); rctx.fill();
+      }
+    }
+    // 边缘 rim
+    rctx.strokeStyle=`rgba(${CY},0.20)`; rctx.lineWidth=1;
+    rctx.beginPath(); rctx.arc(cx,cy,r,0,6.283); rctx.stroke();
   }
 
   const ago=ts=>{ const s=Math.max(0,(Date.now()-ts)/1000);
@@ -1756,8 +1862,9 @@ if(document.fonts && document.fonts.load){
       elStats.style.display=''; recent=d.recent||[];
     } else {
       elOnline.textContent='YOU'; elStats.style.display='none';
-      recent = (you.city||you.cc) ? [{city:you.city,cc:you.cc,lng:you.lng,ts:Date.now()}] : [];
+      recent = (you.city||you.cc) ? [{city:you.city,cc:you.cc,lat:you.lat,lng:you.lng,ts:Date.now()}] : [];
     }
+    if(you.lat!=null && you.lng!=null) aimAt(you.lat,you.lng);   // 地球转向访客所在位置
     rebuildPins(); cycleTick(); el.classList.add('show'); el.setAttribute('aria-hidden','false');
   }
 
@@ -1770,11 +1877,11 @@ if(document.fonts && document.fonts.load){
       if(location.search.indexOf('livedemo')>=0){ render(DEMO); }   // 本地预览用：加 ?livedemo
     }
   }
-  const DEMO={ok:true,storage:true,you:{city:'Seoul',cc:'KR',lng:127},total:1284,countries:41,online:6,
-    recent:[{city:'Tokyo',cc:'JP',lng:139.7,ts:Date.now()-9e3},{city:'San Francisco',cc:'US',lng:-122.4,ts:Date.now()-4e4},
-      {city:'Berlin',cc:'DE',lng:13.4,ts:Date.now()-9e4},{city:'São Paulo',cc:'BR',lng:-46.6,ts:Date.now()-2e5},
-      {city:'Singapore',cc:'SG',lng:103.8,ts:Date.now()-5e5},{city:'London',cc:'GB',lng:-0.1,ts:Date.now()-9e5},
-      {city:'Toronto',cc:'CA',lng:-79.4,ts:Date.now()-16e5},{city:'Mumbai',cc:'IN',lng:72.9,ts:Date.now()-3e6}]};
+  const DEMO={ok:true,storage:true,you:{city:'Seoul',cc:'KR',lat:37.5,lng:127},total:1284,countries:41,online:6,
+    recent:[{city:'Tokyo',cc:'JP',lat:35.7,lng:139.7,ts:Date.now()-9e3},{city:'San Francisco',cc:'US',lat:37.8,lng:-122.4,ts:Date.now()-4e4},
+      {city:'Berlin',cc:'DE',lat:52.5,lng:13.4,ts:Date.now()-9e4},{city:'São Paulo',cc:'BR',lat:-23.5,lng:-46.6,ts:Date.now()-2e5},
+      {city:'Singapore',cc:'SG',lat:1.35,lng:103.8,ts:Date.now()-5e5},{city:'London',cc:'GB',lat:51.5,lng:-0.1,ts:Date.now()-9e5},
+      {city:'Toronto',cc:'CA',lat:43.7,lng:-79.4,ts:Date.now()-16e5},{city:'Mumbai',cc:'IN',lat:19.1,lng:72.9,ts:Date.now()-3e6}]};
 
   function begin(){ if(started)return; started=true; size(); addEventListener('resize',size);
     raf=requestAnimationFrame(draw); poll(); setInterval(poll,25000); setInterval(cycleTick,3600); }
