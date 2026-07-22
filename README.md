@@ -79,6 +79,25 @@ Every future `git push` to `main` auto-deploys.
 
 ---
 
+## Live visitor telemetry (the corner "LIVE" HUD)
+
+The bottom-left HUD (a radar + `SIGNALS` / `COUNTRIES` counts + a live arrivals ticker) is powered by a tiny serverless function at [`api/visit.js`](api/visit.js). On each load it:
+
+- derives **coarse geo** (country / city / lat-lng) from Vercel's edge headers — no third-party geo API;
+- logs the visit and reads back aggregate stats from **Upstash Redis**.
+
+**Privacy:** the raw IP is *never* stored or shown. It's used only transiently to derive the city and a salted hash (for unique / "online now" counting). The public feed is city + country + time only, at ~11 km granularity. Rapid re-polls from one visitor don't inflate the count (30-min dedup).
+
+### Enable the real counters (~2 min, one-time)
+
+Until a store is connected the HUD still works — it shows each visitor **their own** detected city and a live pulse — but there are no cross-visitor totals. To turn on real accumulating stats:
+
+1. Vercel dashboard → the **outputs** project → **Storage** → **Create Database** → **Upstash → Redis** (free tier) → connect it to the project.
+2. That auto-injects `KV_REST_API_URL` + `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_URL/TOKEN`) as env vars — the function reads either naming.
+3. **Redeploy** (`vercel --prod`, or push to `main`). Counters start accumulating from that moment.
+
+Preview the HUD's full look locally without a store: open `index.html?livedemo=1` (uses sample data only when the API is unreachable).
+
 ## Editing content later
 
 Open `index.html`, find the `CONTENT = { ... }` block at the top (clearly marked), and edit it. Examples:

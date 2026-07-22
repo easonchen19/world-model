@@ -369,6 +369,30 @@ body.fonts-in .topbar,body.fonts-in .intro{opacity:1}
 .overlay::-webkit-scrollbar{width:10px}
 .overlay::-webkit-scrollbar-track{background:transparent}
 .overlay::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:5px;border:3px solid transparent;background-clip:content-box}
+/* —— LIVE 访客遥测 HUD（左下角，仪表级克制，不抢镜） —— */
+.live{position:fixed;left:22px;bottom:22px;z-index:35;width:206px;
+  background:rgba(10,14,34,.5);backdrop-filter:blur(10px);border:1px solid var(--ring);border-radius:14px;
+  padding:11px 13px 10px;font-family:var(--display);color:var(--ink-dim);
+  opacity:0;transform:translateY(10px);transition:opacity .9s ease,transform .9s cubic-bezier(.22,1,.36,1);
+  box-shadow:0 16px 40px rgba(0,0,0,.35)}
+.live.show{opacity:1;transform:none}
+.liveHead{display:flex;align-items:center;gap:7px;font-size:10px;letter-spacing:.26em;color:var(--ink-dim)}
+.liveDot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 9px var(--cyan);
+  animation:livePulse 2.2s ease-in-out infinite;flex:0 0 auto}
+@keyframes livePulse{0%,100%{opacity:.3}50%{opacity:1}}
+.liveHead .on{margin-left:auto;color:var(--ink);font-size:9.5px;letter-spacing:.12em}
+.liveRadar{display:block;width:100%;height:92px;margin:9px 0 7px}
+.liveStats{font-size:9.5px;letter-spacing:.16em;color:var(--ink-dim);display:flex;align-items:baseline;gap:5px;flex-wrap:wrap}
+.liveStats b{font-family:var(--display);font-weight:700;font-size:14px;color:var(--ink);letter-spacing:.02em}
+.liveStats .sep{opacity:.4}
+.liveTick{margin-top:8px;font-size:10px;letter-spacing:.08em;color:var(--ink-dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:13px}
+.liveTick .arr{color:var(--cyan);margin-right:4px}
+.liveTick.flash{animation:tickFlash .55s ease}
+@keyframes tickFlash{0%{opacity:.15;transform:translateX(-3px)}100%{opacity:1;transform:none}}
+/* 手机端：英雄文案占据下方，遥测移到左上角空白处（不压英雄） */
+@media(max-width:600px){.live{left:12px;top:120px;bottom:auto;width:146px;padding:9px 10px 8px}
+  .liveRadar{height:60px;margin:6px 0 5px}.liveStats b{font-size:12px}.liveStats{font-size:9px}.liveHead{font-size:9px;letter-spacing:.2em}}
 </style>
 </head>
 <body>
@@ -392,6 +416,14 @@ body.fonts-in .topbar,body.fonts-in .intro{opacity:1}
 </div>
 
 <div class="tip" id="tip"></div>
+
+<!-- LIVE 访客遥测 HUD -->
+<div class="live" id="live" aria-hidden="true">
+  <div class="liveHead"><span class="liveDot"></span>LIVE<span class="on" id="liveOnline"></span></div>
+  <canvas class="liveRadar" id="liveRadar"></canvas>
+  <div class="liveStats" id="liveStats"><b id="liveTotal">—</b> SIGNALS <span class="sep">·</span> <b id="liveCountries">—</b> COUNTRIES</div>
+  <div class="liveTick" id="liveTicker"></div>
+</div>
 
 <div class="overlay" id="overlay">
   <button class="closeBtn" id="closeBtn" aria-label="close">✕</button>
@@ -1596,6 +1628,102 @@ if(document.fonts && document.fonts.load){
   ]).then(fontsIn).catch(fontsIn);
   setTimeout(fontsIn, 900);   // 兜底：字体太慢也要出文案
 } else fontsIn();
+</script>
+
+<!-- ===================== LIVE 访客遥测 ===================== -->
+<script>
+(function(){
+  const el=document.getElementById('live'); if(!el) return;
+  const radar=document.getElementById('liveRadar'), rctx=radar.getContext('2d');
+  const elOnline=document.getElementById('liveOnline'), elTotal=document.getElementById('liveTotal'),
+        elCountries=document.getElementById('liveCountries'), elStats=document.getElementById('liveStats'),
+        elTick=document.getElementById('liveTicker'), overlay=document.getElementById('overlay');
+  const CY='34,211,238';
+  let W,H,DPR, pins=[], recent=[], sweep=0, raf=null, tickIdx=0, started=false;
+
+  function size(){ DPR=Math.min(devicePixelRatio||1,2); W=radar.clientWidth||180; H=radar.clientHeight||92;
+    radar.width=W*DPR; radar.height=H*DPR; rctx.setTransform(DPR,0,0,DPR,0,0); rebuildPins(); }
+  const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const rnd=(seed)=>{ const x=Math.sin(seed*99.7)*43758.5; return x-Math.floor(x); };
+  function bearing(v,i){ const lng=(v&&v.lng!=null)?v.lng:(rnd(i+1)*360-180); return (lng+180)/360*6.283 - 1.5708; }
+
+  function rebuildPins(){
+    const cx=W/2, cy=H/2, R=Math.min(W,H)*0.44;
+    pins = recent.slice(0,14).map((v,i)=>{
+      const a=bearing(v,i), rr=R*(0.32 + (i/14)*0.62);
+      return { x:cx+Math.cos(a)*rr, y:cy+Math.sin(a)*rr*0.62, life:1-i/17, v };
+    });
+  }
+  function draw(t){
+    raf=requestAnimationFrame(draw);
+    if(overlay && overlay.classList.contains('open')) return;   // 面板打开时不画，省电
+    rctx.clearRect(0,0,W,H);
+    const cx=W/2, cy=H/2, R=Math.min(W,H)*0.46;
+    rctx.strokeStyle='rgba(148,160,207,.13)'; rctx.lineWidth=1;
+    for(const f of [0.4,0.72,1]){ rctx.beginPath(); rctx.ellipse(cx,cy,R*f,R*f*0.62,0,0,6.283); rctx.stroke(); }
+    sweep+=0.011;
+    const ex=cx+Math.cos(sweep)*R, ey=cy+Math.sin(sweep)*R*0.62;
+    const sg=rctx.createLinearGradient(cx,cy,ex,ey);
+    sg.addColorStop(0,`rgba(${CY},.32)`); sg.addColorStop(1,`rgba(${CY},0)`);
+    rctx.strokeStyle=sg; rctx.lineWidth=1.4; rctx.beginPath(); rctx.moveTo(cx,cy); rctx.lineTo(ex,ey); rctx.stroke();
+    rctx.globalCompositeOperation='lighter';
+    const cg=rctx.createRadialGradient(cx,cy,0,cx,cy,11);
+    cg.addColorStop(0,`rgba(${CY},.55)`); cg.addColorStop(1,`rgba(${CY},0)`);
+    rctx.fillStyle=cg; rctx.beginPath(); rctx.arc(cx,cy,11,0,6.283); rctx.fill();
+    for(const p of pins){
+      const pulse=0.6+0.4*Math.sin(t/520+p.x*0.3);
+      const g=rctx.createRadialGradient(p.x,p.y,0,p.x,p.y,5.5);
+      g.addColorStop(0,`rgba(200,235,255,${0.55*p.life*pulse})`); g.addColorStop(1,'rgba(200,235,255,0)');
+      rctx.fillStyle=g; rctx.beginPath(); rctx.arc(p.x,p.y,5.5,0,6.283); rctx.fill();
+    }
+    rctx.globalCompositeOperation='source-over';
+    rctx.fillStyle='#fff'; rctx.beginPath(); rctx.arc(cx,cy,2.1,0,6.283); rctx.fill();
+    for(const p of pins){ rctx.fillStyle=`rgba(255,255,255,${0.75*p.life})`; rctx.beginPath(); rctx.arc(p.x,p.y,1.2,0,6.283); rctx.fill(); }
+  }
+
+  const ago=ts=>{ const s=Math.max(0,(Date.now()-ts)/1000);
+    return s<45?'now':s<3600?Math.floor(s/60)+'m':s<86400?Math.floor(s/3600)+'h':Math.floor(s/86400)+'d'; };
+  const place=v=>[v.city,v.cc].filter(Boolean).join(', ')||'Somewhere';
+  const fmtN=n=>{ n=+n||0; return n>=1000?(n/1000).toFixed(n>=10000?0:1)+'k':String(n); };
+  function cycleTick(){ if(!recent.length){ elTick.textContent=''; return; }
+    const v=recent[tickIdx%recent.length]; tickIdx++;
+    elTick.innerHTML=`<span class="arr">↯</span>${esc(place(v))} · ${ago(v.ts)}`;
+    elTick.classList.remove('flash'); void elTick.offsetWidth; elTick.classList.add('flash'); }
+
+  function render(d){
+    const you=d.you||{};
+    if(d.storage){
+      elTotal.textContent=fmtN(d.total); elCountries.textContent=fmtN(d.countries);
+      elOnline.textContent=(d.online!=null?d.online:1)+' ONLINE';
+      elStats.style.display=''; recent=d.recent||[];
+    } else {
+      elOnline.textContent='YOU'; elStats.style.display='none';
+      recent = (you.city||you.cc) ? [{city:you.city,cc:you.cc,lng:you.lng,ts:Date.now()}] : [];
+    }
+    rebuildPins(); cycleTick(); el.classList.add('show'); el.setAttribute('aria-hidden','false');
+  }
+
+  async function poll(){
+    try{
+      const r=await fetch('/api/visit',{cache:'no-store'});
+      if(!r.ok) throw 0;
+      render(await r.json());
+    }catch(e){
+      if(location.search.indexOf('livedemo')>=0){ render(DEMO); }   // 本地预览用：加 ?livedemo
+    }
+  }
+  const DEMO={ok:true,storage:true,you:{city:'Seoul',cc:'KR',lng:127},total:1284,countries:41,online:6,
+    recent:[{city:'Tokyo',cc:'JP',lng:139.7,ts:Date.now()-9e3},{city:'San Francisco',cc:'US',lng:-122.4,ts:Date.now()-4e4},
+      {city:'Berlin',cc:'DE',lng:13.4,ts:Date.now()-9e4},{city:'São Paulo',cc:'BR',lng:-46.6,ts:Date.now()-2e5},
+      {city:'Singapore',cc:'SG',lng:103.8,ts:Date.now()-5e5},{city:'London',cc:'GB',lng:-0.1,ts:Date.now()-9e5},
+      {city:'Toronto',cc:'CA',lng:-79.4,ts:Date.now()-16e5},{city:'Mumbai',cc:'IN',lng:72.9,ts:Date.now()-3e6}]};
+
+  function begin(){ if(started)return; started=true; size(); addEventListener('resize',size);
+    raf=requestAnimationFrame(draw); poll(); setInterval(poll,25000); setInterval(cycleTick,3600); }
+  // 等字体/首屏就绪后再淡入，避免和英雄文案抢注意力
+  if(document.fonts&&document.fonts.ready){ document.fonts.ready.then(begin); setTimeout(begin,1200); }
+  else begin();
+})();
 </script>
 </body>
 </html>
