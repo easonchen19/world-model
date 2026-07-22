@@ -361,7 +361,7 @@ body{color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-font-smoot
 <div class="topbar">
   <div class="brand">WORLD MODEL</div>
   <div class="tbright">
-    <button class="soundbtn" id="soundbtn" title="ambient sound">♪ OFF</button>
+    <button class="soundbtn" id="soundbtn" title="ambient sound">♪ ON</button>
     <div class="langsw" id="langsw"></div>
   </div>
 </div>
@@ -739,6 +739,23 @@ function playWhoosh(){
   src.connect(bp);bp.connect(g);g.connect(master); src.start(now); src.stop(now+dur);
 }
 document.getElementById('soundbtn').onclick=()=>setSound(!soundOn);
+
+// —— 默认开声 ——
+// 浏览器自动播放策略：没有用户手势前 AudioContext 停在 suspended。
+// 这里默认把声音"武装"为 ON(按钮显示 ♪ ON，想静音随时可点)，
+// 访客第一次任意点击/触摸/按键时立即恢复播放。
+function armSoundUnlock(){
+  const evs=['pointerdown','keydown','touchstart'];
+  const off=()=>evs.forEach(t=>removeEventListener(t,unlock,true));
+  function unlock(){
+    if(soundOn && actx && actx.state==='suspended'){
+      actx.resume().then(()=>{ if(actx.state==='running') off(); });
+    } else off();
+  }
+  evs.forEach(t=>addEventListener(t,unlock,true));
+}
+setSound(true);
+armSoundUnlock();
 
 /* ---------- 交互 ---------- */
 cv.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;});

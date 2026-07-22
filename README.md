@@ -5,7 +5,7 @@ An interactive personal "world model": a living galaxy where each planet is a di
 - Trilingual (EN / 中文 / 日本語)
 - Animated spiral galaxy with orbiting planets + clickable satellite moons
 - Interstellar "warp" transition into each section
-- Optional ambient sound (synthesized, off by default)
+- Ambient sound (synthesized, **on by default** — starts on the visitor's first click/tap per browser autoplay policy; mute button top-right)
 
 Each section opens into its **own bespoke interactive instrument** (all vanilla canvas/SVG — still no dependencies):
 
@@ -73,7 +73,9 @@ vercel          # links the project, preview deploy
 vercel --prod   # production deploy
 ```
 
-Every future `git push` to `main` auto-deploys. Add a custom domain (e.g. `easonchen95.com`) in Vercel → Project → Settings → Domains.
+Every future `git push` to `main` auto-deploys.
+
+**Custom domain:** bound to `easonchen95.com` — `www.easonchen95.com` is the primary domain, the apex 308-redirects to it. DNS lives at Hostinger (`dns-parking.com` nameservers): apex `A → 216.150.1.1` (Vercel) + `www CNAME → vercel-dns`.
 
 ---
 
