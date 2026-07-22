@@ -390,9 +390,9 @@ body.fonts-in .topbar,body.fonts-in .intro{opacity:1}
 .liveTick .arr{color:var(--cyan);margin-right:4px}
 .liveTick.flash{animation:tickFlash .55s ease}
 @keyframes tickFlash{0%{opacity:.15;transform:translateX(-3px)}100%{opacity:1;transform:none}}
-/* 手机端：英雄文案占据下方，遥测移到左上角空白处（不压英雄） */
-@media(max-width:600px){.live{left:12px;top:120px;bottom:auto;width:146px;padding:9px 10px 8px}
-  .liveRadar{height:60px;margin:6px 0 5px}.liveStats b{font-size:12px}.liveStats{font-size:9px}.liveHead{font-size:9px;letter-spacing:.2em}}
+/* 窄屏或矮屏：英雄文案占据下方，遥测移到左上角空白处（不压英雄） */
+@media(max-width:600px),(max-height:660px){.live{left:12px;top:118px;bottom:auto;width:146px;padding:9px 10px 8px}
+  .liveRadar{height:58px;margin:6px 0 5px}.liveStats b{font-size:12px}.liveStats{font-size:9px}.liveHead{font-size:9px;letter-spacing:.2em}}
 </style>
 </head>
 <body>
