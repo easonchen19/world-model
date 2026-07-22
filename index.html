@@ -1894,16 +1894,57 @@ if(document.fonts && document.fonts.load){
     // 世界节点（金色小环，淡入淡出轮换——金色在蓝色大陆上对比最强，不会被点阵吞掉）
     refreshHubs(t);
     for(const h of hubSet){ const v=h.v;
+      const age=t-h.born;
+      h._f=Math.max(0,Math.min(1, age/1200, (h.ttl-age)/1200));   // 供弧线复用
       const x1=v[0]*cyw+v[2]*syw, z1=-v[0]*syw+v[2]*cyw;
       const y2=v[1]*ct-z1*st, z2=v[1]*st+z1*ct;
       if(z2<=0.05) continue;
-      const age=t-h.born, fade=Math.max(0,Math.min(1, age/1200, (h.ttl-age)/1200));
+      const fade=h._f;
       const sx=cx+x1*r, sy=cy-y2*r, pu=0.75+0.25*Math.sin(t/700+h.born%7);
       rctx.strokeStyle=`rgba(255,209,102,${0.85*fade*pu*(0.45+0.55*z2)})`;
       rctx.lineWidth=1.1;
       rctx.beginPath(); rctx.arc(sx,sy,2.3,0,6.283); rctx.stroke();
       rctx.fillStyle=`rgba(255,224,150,${0.7*fade*z2})`;
       rctx.beginPath(); rctx.arc(sx,sy,0.9,0,6.283); rctx.fill();
+    }
+    // —— 光网：访客位置 ↔ 世界节点的大圆弧（微微抬离球面），弧上有光点飞行 ——
+    function netArc(va,vb,alpha,phase,pulse){
+      let dp=va[0]*vb[0]+va[1]*vb[1]+va[2]*vb[2]; dp=Math.max(-1,Math.min(1,dp));
+      const om=Math.acos(dp); if(om<0.03||alpha<=0.01) return;
+      const so=Math.sin(om);
+      rctx.strokeStyle=`rgba(255,209,102,${alpha})`; rctx.lineWidth=0.8;
+      let started=false; rctx.beginPath();
+      for(let i=0;i<=14;i++){ const s=i/14;
+        const k1=Math.sin((1-s)*om)/so, k2=Math.sin(s*om)/so;
+        const lift=1+0.12*Math.sin(Math.PI*s);
+        const x=(va[0]*k1+vb[0]*k2)*lift, y=(va[1]*k1+vb[1]*k2)*lift, z=(va[2]*k1+vb[2]*k2)*lift;
+        const x1=x*cyw+z*syw, z1=-x*syw+z*cyw;
+        const y2=y*ct-z1*st, z2=y*st+z1*ct;
+        if(z2<=0){ started=false; continue; }
+        const sx=cx+x1*r, sy=cy-y2*r;
+        if(!started){ rctx.moveTo(sx,sy); started=true; } else rctx.lineTo(sx,sy);
+      }
+      rctx.stroke();
+      if(pulse){   // 沿弧飞行的数据光点
+        const p=((t/1500)+phase)%1;
+        const k1=Math.sin((1-p)*om)/so, k2=Math.sin(p*om)/so;
+        const lift=1+0.12*Math.sin(Math.PI*p);
+        const x=(va[0]*k1+vb[0]*k2)*lift, y=(va[1]*k1+vb[1]*k2)*lift, z=(va[2]*k1+vb[2]*k2)*lift;
+        const x1=x*cyw+z*syw, z1=-x*syw+z*cyw;
+        const y2=y*ct-z1*st, z2=y*st+z1*ct;
+        if(z2>0){ const sx=cx+x1*r, sy=cy-y2*r;
+          rctx.fillStyle=`rgba(240,250,255,${Math.min(1,alpha*2.2)})`;
+          rctx.beginPath(); rctx.arc(sx,sy,1.2,0,6.283); rctx.fill();
+        }
+      }
+    }
+    if(youVec){
+      for(let i=0;i<hubSet.length;i++){ const h=hubSet[i];
+        if(h._f) netArc(youVec,h.v,0.38*h._f,i*0.31,true); }
+    }
+    for(let i=0;i<hubSet.length-1;i++){   // 节点间细网，织出"围绕地球的网"
+      const f=Math.min(hubSet[i]._f||0,hubSet[i+1]._f||0);
+      if(f) netArc(hubSet[i].v,hubSet[i+1].v,0.15*f,0,false);
     }
     // 你的位置：青色脉冲信标
     if(youVec){ const v=youVec;
