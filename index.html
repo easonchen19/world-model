@@ -1789,6 +1789,26 @@ if(document.fonts && document.fonts.load){
   function rebuildPins(){
     pins=recent.slice(0,20).filter(v=>v&&v.lat!=null&&v.lng!=null).map((v,i)=>({v:toVec(v.lat,v.lng), life:1-i/24}));
   }
+
+  // —— 世界节点：主要城市的氛围点，随机轮换 3~4 个缓缓明灭 ——
+  // 纯装饰(空心环样式，与真实访客的实心白点区分)；不计入统计、不进滚动条
+  const HUBS=[
+    ['New York',40.7,-74.0], ['San Francisco',37.8,-122.4], ['Tokyo',35.7,139.7],
+    ['Singapore',1.35,103.8], ['London',51.5,-0.1], ['Dubai',25.2,55.3],
+    ['Amsterdam',52.4,4.9], ['Hong Kong',22.3,114.2], ['Paris',48.9,2.35],
+    ['Seoul',37.5,127.0], ['Sydney',-33.9,151.2], ['Bangkok',13.76,100.5]
+  ].map(h=>({c:h[0], v:toVec(h[1],h[2])}));
+  let hubSet=[];
+  function refreshHubs(t){
+    hubSet=hubSet.filter(h=>t-h.born<h.ttl);
+    const want=3+(((t/9000)|0)%2);   // 3 或 4 个之间摆动
+    let guard=0;
+    while(hubSet.length<want && guard++<20){
+      const pick=HUBS[Math.floor(Math.random()*HUBS.length)];
+      if(!hubSet.some(h=>h.c===pick.c))
+        hubSet.push({c:pick.c, v:pick.v, born:t, ttl:7000+Math.random()*8000});
+    }
+  }
   function aimAt(lat,lng){ youVec=toVec(lat,lng);
     yawT=-lng*Math.PI/180; tiltT=Math.max(-1.1,Math.min(1.1,lat*Math.PI/180)); }
   function draw(t){
@@ -1824,6 +1844,20 @@ if(document.fonts && document.fonts.load){
       if(z2<=0.05) continue;
       rctx.fillStyle=`rgba(235,244,255,${(0.35+0.5*z2)*p.life})`;
       rctx.beginPath(); rctx.arc(cx+x1*r, cy-y2*r, 1.1, 0, 6.283); rctx.fill();
+    }
+    // 世界节点（空心小环，淡入淡出轮换）
+    refreshHubs(t);
+    for(const h of hubSet){ const v=h.v;
+      const x1=v[0]*cyw+v[2]*syw, z1=-v[0]*syw+v[2]*cyw;
+      const y2=v[1]*ct-z1*st, z2=v[1]*st+z1*ct;
+      if(z2<=0.05) continue;
+      const age=t-h.born, fade=Math.max(0,Math.min(1, age/1200, (h.ttl-age)/1200));
+      const sx=cx+x1*r, sy=cy-y2*r;
+      rctx.strokeStyle=`rgba(147,197,253,${0.55*fade*(0.4+0.6*z2)})`;
+      rctx.lineWidth=0.9;
+      rctx.beginPath(); rctx.arc(sx,sy,1.9,0,6.283); rctx.stroke();
+      rctx.fillStyle=`rgba(147,197,253,${0.35*fade*z2})`;
+      rctx.beginPath(); rctx.arc(sx,sy,0.7,0,6.283); rctx.fill();
     }
     // 你的位置：青色脉冲信标
     if(youVec){ const v=youVec;
