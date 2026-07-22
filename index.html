@@ -47,6 +47,8 @@ const CONTENT = {
       zh:"哥伦比亚大学 · 前 Bloomberg · a16z 被投退出 · 旧金山 / 纽约 / 巴厘",
       ja:"コロンビア大学 · 元 Bloomberg · a16z 出資先イグジット · SF / NYC / バリ"
     },
+    // 首页轻声问候（淡入、克制，不喧宾夺主）
+    welcome:{ en:"Welcome to my universe", zh:"欢迎来到我的宇宙", ja:"私の宇宙へようこそ" },
     manifesto:[
       { en:"I built Jaguar AI so no founder ships on a broken foundation.",
         zh:"我做 Jaguar AI，是为了让没有一个创始人建在破碎的地基上。",
@@ -285,6 +287,7 @@ body{color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-font-smoot
 .langsw button:hover{color:var(--ink)}
 
 .intro{position:fixed;left:0;right:0;bottom:38px;z-index:30;text-align:center;pointer-events:none;transition:opacity 1s}
+.intro .welcome{font-family:var(--body);font-weight:300;font-size:13px;letter-spacing:.03em;color:var(--ink-dim);opacity:.72;margin-bottom:15px}
 .intro .r{font-family:var(--display);font-weight:700;letter-spacing:.42em;font-size:10.5px;color:var(--mars);margin-bottom:10px;text-transform:uppercase}
 .intro .h{font-family:var(--display);font-weight:900;font-size:clamp(26px,4.6vw,46px);letter-spacing:.1em;
   background:linear-gradient(180deg,#ffffff 0%,#c9d6ff 72%,#a9b7e6 100%);
@@ -408,6 +411,7 @@ body.fonts-in .topbar,body.fonts-in .intro{opacity:1}
 </div>
 
 <div class="intro" id="intro">
+  <div class="welcome" id="introWelcome"></div>
   <div class="r" id="introKicker"></div>
   <div class="h" id="introName"></div>
   <div class="tag" id="introTag"></div>
@@ -900,6 +904,7 @@ function renderBody(p){
 /* ---------- 三语 ---------- */
 function renderStatic(){
   document.documentElement.lang=LANG;
+  document.getElementById('introWelcome').textContent=T(CONTENT.core.welcome);
   document.getElementById('introKicker').textContent=T(CONTENT.core.kicker);
   document.getElementById('introName').textContent=T(CONTENT.core.name);
   document.getElementById('introTag').textContent=T(CONTENT.core.tagline);
