@@ -778,14 +778,64 @@ function ensureAudio(){
 }
 function startAmbient(){
   if(ambientStarted) return; ambientStarted=true;
-  const filt=actx.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=520; filt.Q.value=0.7; filt.connect(master);
-  [110,164.81,220,146.83].forEach((f,i)=>{
-    const o=actx.createOscillator(); o.type=(i%2)?'sine':'triangle';
-    o.frequency.value=f; o.detune.value=(i-1)*4;
-    const g=actx.createGain(); g.gain.value=0.4/(i+1); o.connect(g); g.connect(filt); o.start();
-  });
-  const lfo=actx.createOscillator(); lfo.frequency.value=0.045;
-  const lg=actx.createGain(); lg.gain.value=260; lfo.connect(lg); lg.connect(filt.frequency); lfo.start();
+  // —— 生成式氛围引擎 v2：缓慢流动的和弦垫（替代原静态持续音）——
+  // Am9 → Fmaj7 → Cmaj9 → Gsus2，约 1 分钟一圈；失谐双振荡器取暖，
+  // 低八度 sub 根音铺底，反馈延迟做"星际残响"，稀疏的星光泛音只落在和弦音上。
+  const tone=actx.createBiquadFilter(); tone.type='lowpass'; tone.frequency.value=760; tone.Q.value=0.5; tone.connect(master);
+  const lfo=actx.createOscillator(); lfo.frequency.value=0.06;
+  const lg=actx.createGain(); lg.gain.value=170; lfo.connect(lg); lg.connect(tone.frequency); lfo.start();
+  // 空间：反馈延迟（湿声再过低通，回声越远越暗）
+  const dly=actx.createDelay(2); dly.delayTime.value=0.52;
+  const fb=actx.createGain(); fb.gain.value=0.38;
+  const damp=actx.createBiquadFilter(); damp.type='lowpass'; damp.frequency.value=1400;
+  dly.connect(damp); damp.connect(fb); fb.connect(dly);
+  const wet=actx.createGain(); wet.gain.value=0.55; dly.connect(wet); wet.connect(tone);
+  const send=actx.createGain(); send.gain.value=0.25; send.connect(dly);
+
+  const CHORDS=[
+    [110.00,164.81,220.00,246.94,329.63],   // Am9
+    [ 87.31,174.61,220.00,261.63,329.63],   // Fmaj7
+    [130.81,196.00,246.94,293.66,329.63],   // Cmaj9
+    [ 98.00,196.00,220.00,293.66,392.00]    // Gsus2
+  ];
+  const CHORD_LEN=14, XFADE=5;
+  let idx=0, nextAt=actx.currentTime+0.1, starAt=actx.currentTime+7;
+
+  function padChord(freqs,t0){
+    const dur=CHORD_LEN+XFADE;
+    freqs.forEach((f,i)=>{
+      [-4,3].forEach(cents=>{               // 每音两只轻微失谐振荡器 → 温暖的合唱感
+        const o=actx.createOscillator(); o.type=i<2?'sine':'triangle';
+        o.frequency.value=f; o.detune.value=cents;
+        const g=actx.createGain(); const peak=0.09/(i*0.7+1)/2;
+        g.gain.setValueAtTime(0,t0);
+        g.gain.linearRampToValueAtTime(peak,t0+XFADE);
+        g.gain.setValueAtTime(peak,t0+CHORD_LEN);
+        g.gain.linearRampToValueAtTime(0,t0+dur);
+        o.connect(g); g.connect(tone); g.connect(send);
+        o.start(t0); o.stop(t0+dur+0.1);
+      });
+    });
+    const s=actx.createOscillator(); s.type='sine'; s.frequency.value=freqs[0]/2;   // sub 根音
+    const sg=actx.createGain(); sg.gain.setValueAtTime(0,t0);
+    sg.gain.linearRampToValueAtTime(0.05,t0+XFADE);
+    sg.gain.setValueAtTime(0.05,t0+CHORD_LEN); sg.gain.linearRampToValueAtTime(0,t0+dur);
+    s.connect(sg); sg.connect(tone); s.start(t0); s.stop(t0+dur+0.1);
+  }
+  function star(t0,freqs){
+    const f=freqs[2+Math.floor(Math.random()*3)]*2;   // 和弦内音高八度 → 永远和谐
+    const o=actx.createOscillator(); o.type='sine'; o.frequency.value=f;
+    const g=actx.createGain(); g.gain.setValueAtTime(0,t0);
+    g.gain.linearRampToValueAtTime(0.028,t0+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+3.2);
+    o.connect(g); g.connect(tone); g.connect(send);
+    o.start(t0); o.stop(t0+3.4);
+  }
+  setInterval(()=>{     // 前瞻调度：每 1.5s 醒来，把 4s 内要发生的事排进音频时钟（后台节流也不断档）
+    const now=actx.currentTime;
+    while(nextAt<now+4){ padChord(CHORDS[idx%CHORDS.length],nextAt); idx++; nextAt+=CHORD_LEN; }
+    while(starAt<now+4){ if(soundOn) star(Math.max(starAt,now+0.05),CHORDS[idx%CHORDS.length]); starAt+=5+Math.random()*9; }
+  },1500);
 }
 function setSound(on){
   soundOn=on;
