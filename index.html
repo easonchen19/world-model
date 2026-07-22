@@ -4,8 +4,14 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Eason — World Model</title>
+<meta name="description" content="Eason Chen — an interactive world model. A living galaxy of career, products, ideas, values, travels, and the doors into my world." />
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <meta name="theme-color" content="#04030e" />
+<meta property="og:title" content="Eason Chen — World Model" />
+<meta property="og:description" content="A living galaxy: career, products, ideas, values, travels — explore each world." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://www.easonchen95.com/" />
+<meta name="twitter:card" content="summary" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;600&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet" />
@@ -260,7 +266,7 @@ html,body{height:100%;background:var(--bg-0)}
 body{color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-font-smoothing:antialiased}
 #sky{position:fixed;inset:0;display:block;z-index:0;cursor:default}
 .vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
-  background:radial-gradient(140% 110% at 50% 48%,transparent 70%,rgba(0,0,0,.28) 100%)}
+  background:radial-gradient(140% 110% at 50% 48%,transparent 70%,rgba(0,0,0,.40) 100%)}
 
 .topbar{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;justify-content:space-between;
   align-items:center;padding:22px 30px;pointer-events:none}
@@ -269,22 +275,22 @@ body{color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-font-smoot
 .soundbtn{font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--ink-dim);
   background:rgba(255,255,255,.04);border:1px solid var(--ring);border-radius:999px;padding:9px 13px;cursor:pointer;
   backdrop-filter:blur(8px);transition:.2s}
-.soundbtn.on{color:#05060f;background:linear-gradient(120deg,var(--gold),var(--mars))}
+.soundbtn.on{color:var(--ink);background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.30)}
 .soundbtn:hover{color:var(--ink)}
 .langsw{display:flex;gap:5px;pointer-events:auto;background:rgba(255,255,255,.04);border:1px solid var(--ring);
   border-radius:999px;padding:5px;backdrop-filter:blur(8px)}
 .langsw button{font-family:var(--display);font-size:12px;font-weight:700;color:var(--ink-dim);background:none;
   border:none;cursor:pointer;padding:6px 12px;border-radius:999px;transition:.2s}
-.langsw button.on{color:#05060f;background:linear-gradient(120deg,var(--cyan),var(--violet))}
+.langsw button.on{color:#05060f;background:var(--ink)}
 .langsw button:hover{color:var(--ink)}
 
 .intro{position:fixed;left:0;right:0;bottom:38px;z-index:30;text-align:center;pointer-events:none;transition:opacity 1s}
 .intro .r{font-family:var(--display);font-weight:700;letter-spacing:.42em;font-size:10.5px;color:var(--mars);margin-bottom:10px;text-transform:uppercase}
 .intro .h{font-family:var(--display);font-weight:900;font-size:clamp(26px,4.6vw,46px);letter-spacing:.1em;
-  background:linear-gradient(120deg,#fff,var(--cyan) 45%,var(--violet));
+  background:linear-gradient(180deg,#ffffff 0%,#c9d6ff 72%,#a9b7e6 100%);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .intro .tag{margin-top:14px;font-family:var(--body);font-weight:300;font-size:clamp(13px,1.7vw,16px);
-  color:var(--ink);max-width:560px;margin-left:auto;margin-right:auto;line-height:1.5;padding:0 20px}
+  color:var(--ink);max-width:560px;margin-left:auto;margin-right:auto;line-height:1.5;padding:0 20px;text-wrap:balance}
 .intro .cred{margin-top:9px;font-family:var(--display);font-weight:500;font-size:10.5px;letter-spacing:.14em;
   color:var(--ink-dim);text-transform:uppercase}
 .intro .cue{margin-top:16px;font-size:10.5px;letter-spacing:.3em;color:var(--ink-dim);font-family:var(--display);
@@ -300,7 +306,7 @@ body{color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-font-smoot
 .sheet{position:relative;overflow:hidden;max-width:860px;margin:0 auto;background:var(--panel);
   border:1px solid var(--ring);border-radius:22px;padding:38px 34px;
   box-shadow:0 30px 90px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.05);
-  animation:sheetIn .5s cubic-bezier(.2,.9,.3,1.1)}
+  animation:sheetIn .55s cubic-bezier(.22,1,.36,1)}
 /* 降落星球的强调色辉光，从顶部浸染面板 */
 .sheet::before{content:"";position:absolute;top:-160px;left:50%;transform:translateX(-50%);
   width:520px;height:320px;border-radius:50%;pointer-events:none;
@@ -321,7 +327,7 @@ body{color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-font-smoot
 .sheetIntro{color:var(--ink-dim);margin:8px 0 26px;font-size:14px}
 .closeBtn{position:fixed;top:24px;right:28px;z-index:62;width:46px;height:46px;border-radius:50%;
   border:1px solid var(--ring);background:rgba(255,255,255,.05);color:var(--ink);font-size:20px;cursor:pointer;transition:.25s}
-.closeBtn:hover{background:var(--mars);color:#fff;transform:rotate(90deg)}
+.closeBtn:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.45);color:#fff;transform:rotate(90deg)}
 .tl{position:relative;padding-left:26px;border-left:1px solid var(--ring);margin-left:6px}
 .tl .node{position:relative;padding:0 0 26px 8px}
 .tl .node::before{content:"";position:absolute;left:-33px;top:4px;width:12px;height:12px;border-radius:50%;
@@ -352,6 +358,17 @@ body{color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-font-smoot
 @keyframes sheetIn{from{opacity:0;transform:translateY(30px) scale(.98)}to{opacity:1;transform:none}}
 @keyframes breathe{0%,100%{opacity:.45}50%{opacity:1}}
 @media(max-width:600px){.sheet{padding:28px 20px}.topbar{padding:16px 18px}}
+/* 字体就绪前隐藏 DOM 文案，就绪后整体淡入（画布不受影响，立即开画） */
+.topbar,.intro{opacity:0;transition:opacity .9s ease .05s}
+body.fonts-in .topbar,body.fonts-in .intro{opacity:1}
+/* 键盘焦点环：工程感的可达性 */
+.card:focus-visible,.linkRow:focus-visible,.mainCard:focus-visible,.closeBtn:focus-visible,
+.langsw button:focus-visible,.soundbtn:focus-visible{outline:1px solid var(--accent,#94a0cf);outline-offset:3px}
+/* 面板细滚动条：仪表级 */
+.overlay{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent}
+.overlay::-webkit-scrollbar{width:10px}
+.overlay::-webkit-scrollbar-track{background:transparent}
+.overlay::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:5px;border:3px solid transparent;background-clip:content-box}
 </style>
 </head>
 <body>
@@ -430,6 +447,7 @@ function seedGalaxy(){
     dust.push({ r:rr, ang, size:isReal?2.2:Math.random()*1.1+0.3, tw:Math.random()*6.28, sp:0.6+Math.random(),
       real:isReal?real[i]:null, col:isReal?'#ffe9c7':'#d3e2ff' });
   }
+  buildGalaxySprites();
 }
 
 /* ---------- 大行星（轨道在引擎分配）---------- */
@@ -448,6 +466,40 @@ function seedPlanets(){
       phase:i*(6.283/n),        // 初始相位均匀分布，彼此不扎堆
       size:17.5-t*2.6+(p.id==='products'?5:0), scale:1, hover:0, moons };  // 整体放大
   });
+  buildPlanetSprites();
+}
+
+/* ---------- 预渲染贴图：把逐帧 createRadialGradient 全部换成一次性离屏位图（性能核心） ---------- */
+const SPR={planet:{}};
+function makeSprite(px,draw){const c=document.createElement('canvas');c.width=c.height=px;draw(c.getContext('2d'),px);return c;}
+function radialSprite(px,stops){return makeSprite(px,(g,s)=>{const grd=g.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);
+  for(const st of stops)grd.addColorStop(st[0],st[1]);g.fillStyle=grd;g.fillRect(0,0,s,s);});}
+function buildGalaxySprites(){
+  const f=document.createElement('canvas');f.width=Math.max(2,W);f.height=Math.max(2,H);
+  const fg=f.getContext('2d');fg.globalCompositeOperation='lighter';
+  const corners=[[0,0,'80,40,140'],[W,0,'30,90,150'],[0,H,'150,50,90'],[W,H,'60,40,130']];
+  for(const cn of corners){const cg=fg.createRadialGradient(cn[0],cn[1],0,cn[0],cn[1],Math.max(W,H)*0.6);
+    cg.addColorStop(0,`rgba(${cn[2]},0.16)`);cg.addColorStop(1,`rgba(${cn[2]},0)`);fg.fillStyle=cg;fg.fillRect(0,0,W,H);}
+  SPR.fog=f;
+  SPR.core=radialSprite(512,[[0,'rgba(255,232,190,0.95)'],[0.22,'rgba(255,150,90,0.4)'],[0.55,'rgba(160,90,210,0.14)'],[1,'rgba(0,0,0,0)']]);
+  SPR.sun=radialSprite(256,[[0,'#fff'],[0.3,'rgba(255,195,125,.85)'],[1,'rgba(255,120,60,0)']]);
+  const nk={};
+  for(const n of nebulae){const k=n.col+'|'+n.a;n._spr=nk[k]||(nk[k]=radialSprite(256,[[0,`rgba(${n.col},${n.a})`],[1,`rgba(${n.col},0)`]]));}
+}
+function buildPlanetSprites(){
+  for(const pl of planets){
+    SPR.planet[pl.id]={
+      halo:radialSprite(256,[[0,pl.color+'bb'],[0.22,pl.color+'55'],[0.5,pl.color+'22'],[1,pl.color+'00']]),
+      body:makeSprite(128,(g,s)=>{const r=s/2;const grd=g.createRadialGradient(r-r*0.35,r-r*0.35,r*0.1,r,r,r);
+        grd.addColorStop(0,'#ffffff');grd.addColorStop(0.35,pl.color);grd.addColorStop(1,shade(pl.color,-55));
+        g.fillStyle=grd;g.beginPath();g.arc(r,r,r,0,6.283);g.fill();}),
+      moon:radialSprite(64,[[0,pl.color+'aa'],[1,pl.color+'00']])
+    };
+    for(const mn of pl.moons){
+      mn._spr=makeSprite(96,(g,s)=>{const r=s/2;g.fillStyle='rgba(6,8,24,.88)';g.beginPath();g.arc(r,r,r,0,6.283);g.fill();
+        g.font=(s*0.9)+'px serif';g.textAlign='center';g.textBaseline='middle';g.fillText(mn.ref.icon,r,r+s*0.03);});
+    }
+  }
 }
 
 function resize(){
@@ -472,14 +524,9 @@ function frame(){
   const rot=time*0.055;
   ctx.clearRect(0,0,W,H);
 
-  // 四角彩色雾（代替死黑）
+  // 四角彩色雾（预渲染一次，逐帧只 drawImage）
   ctx.globalCompositeOperation='lighter';
-  const corners=[[0,0,'80,40,140'],[W,0,'30,90,150'],[0,H,'150,50,90'],[W,H,'60,40,130']];
-  for(const [x,y,c] of corners){
-    const cg=ctx.createRadialGradient(x,y,0,x,y,Math.max(W,H)*0.6);
-    cg.addColorStop(0,`rgba(${c},0.16)`); cg.addColorStop(1,`rgba(${c},0)`);
-    ctx.fillStyle=cg;ctx.fillRect(0,0,W,H);
-  }
+  if(SPR.fog) ctx.drawImage(SPR.fog,0,0,W,H);
 
   // ——— 星际穿越镜头：把整个星系内容做缩放/平移 ———
   updateWarp();
@@ -489,23 +536,17 @@ function frame(){
   ctx.scale(cam.s, cam.s);
   ctx.translate(-cam.px, -cam.py);
 
-  // 核心辉光
+  // 核心辉光（贴图）
   const coreR=discR*0.42*intro;
-  let g=ctx.createRadialGradient(cx,cy,0,cx,cy,coreR);
-  g.addColorStop(0,'rgba(255,232,190,0.95)');
-  g.addColorStop(0.22,'rgba(255,150,90,0.4)');
-  g.addColorStop(0.55,'rgba(160,90,210,0.14)');
-  g.addColorStop(1,'rgba(0,0,0,0)');
   ctx.save();ctx.translate(cx,cy);ctx.scale(1,SY+0.18);ctx.translate(-cx,-cy);
-  ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,coreR,0,6.283);ctx.fill();ctx.restore();
+  if(coreR>0) ctx.drawImage(SPR.core,cx-coreR,cy-coreR,coreR*2,coreR*2);
+  ctx.restore();
 
-  // 星云
+  // 星云（贴图）
   for(const n of nebulae){
     const a=n.ang+rot, R=n.r*discR*intro;
     const x=cx+R*Math.cos(a), y=cy+R*SY*Math.sin(a), rad=n.size*discR;
-    const ng=ctx.createRadialGradient(x,y,0,x,y,rad);
-    ng.addColorStop(0,`rgba(${n.col},${n.a})`); ng.addColorStop(1,`rgba(${n.col},0)`);
-    ctx.fillStyle=ng;ctx.beginPath();ctx.arc(x,y,rad,0,6.283);ctx.fill();
+    if(n._spr) ctx.drawImage(n._spr,x-rad,y-rad,rad*2,rad*2);
   }
 
   // 背景星
@@ -563,21 +604,17 @@ function frame(){
   for(const o of drawn){
     const pl=o.pl;
     pl._sx=o.x; pl._sy=o.y;               // 记录当前屏幕位置，供穿越镜头用
-    const target=(hovered===pl)?1.7:1;
+    const target=(hovered===pl)?1.35:1;
     pl.scale+=(target-pl.scale)*0.22;
     pl.hover+=((hovered===pl?1:0)-pl.hover)*0.2;
     const sz=pl.size*(1+0.2*o.depth)*pl.scale*(0.6+0.4*intro);
-    // 光晕
+    const ps=SPR.planet[pl.id];
+    // 光晕（贴图）
     ctx.globalCompositeOperation='lighter';
-    const halo=ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,sz*5.4);
-    halo.addColorStop(0,pl.color+'bb');halo.addColorStop(0.22,pl.color+'55');
-    halo.addColorStop(0.5,pl.color+'22');halo.addColorStop(1,pl.color+'00');
-    ctx.fillStyle=halo;ctx.beginPath();ctx.arc(o.x,o.y,sz*5.4,0,6.283);ctx.fill();
-    // 星体
+    ctx.drawImage(ps.halo,o.x-sz*5.4,o.y-sz*5.4,sz*10.8,sz*10.8);
+    // 星体（贴图）
     ctx.globalCompositeOperation='source-over';
-    const body=ctx.createRadialGradient(o.x-sz*0.35,o.y-sz*0.35,sz*0.1,o.x,o.y,sz);
-    body.addColorStop(0,'#ffffff');body.addColorStop(0.35,pl.color);body.addColorStop(1,shade(pl.color,-55));
-    ctx.fillStyle=body;ctx.beginPath();ctx.arc(o.x,o.y,sz,0,6.283);ctx.fill();
+    ctx.drawImage(ps.body,o.x-sz,o.y-sz,sz*2,sz*2);
     // 轨道环：小卫星运行的轨道线 —— 每颗大行星都画一圈（扁平椭圆，卫星正好在环线上）
     if(pl.moons && pl.moons.length){
       const orbit=pl.size*pl.scale*2.6;
@@ -593,23 +630,20 @@ function frame(){
     // 卫星小星球（带图标）
     for(const mn of pl.moons){
       const mh=(hoverMoon&&hoverMoon.mn===mn)?1:0;
-      mn.hover+=(mh-mn.hover)*0.3; mn.scale+=((mh?2.6:1)-mn.scale)*0.3;
+      mn.hover+=(mh-mn.hover)*0.3; mn.scale+=((mh?1.9:1)-mn.scale)*0.3;
       const ms=(4.6+pl.size*0.14)*mn.scale;
       ctx.globalCompositeOperation='lighter';
-      const mg=ctx.createRadialGradient(mn._x,mn._y,0,mn._x,mn._y,ms*3);
-      mg.addColorStop(0,pl.color+'aa');mg.addColorStop(1,pl.color+'00');
-      ctx.fillStyle=mg;ctx.beginPath();ctx.arc(mn._x,mn._y,ms*3,0,6.283);ctx.fill();
+      ctx.drawImage(ps.moon,mn._x-ms*3,mn._y-ms*3,ms*6,ms*6);
       ctx.globalCompositeOperation='source-over';
-      ctx.fillStyle='rgba(8,11,30,.72)';ctx.beginPath();ctx.arc(mn._x,mn._y,ms+1,0,6.283);ctx.fill();
       ctx.globalAlpha=0.85+0.15*mn.hover;
-      ctx.font=`${ms*1.9}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillText(mn.ref.icon, mn._x, mn._y+1);
-      ctx.globalAlpha=1;ctx.textBaseline='alphabetic';
+      const mr=ms+1;
+      if(mn._spr) ctx.drawImage(mn._spr,mn._x-mr,mn._y-mr,mr*2,mr*2);
+      ctx.globalAlpha=1;
     }
     // 标签
     const la=0.5+0.5*pl.hover;
     ctx.globalAlpha=Math.max(0.32,la)*intro;ctx.textAlign='center';
-    ctx.font=`700 ${13+pl.hover*3}px Inter,"Noto Sans SC","Noto Sans JP",sans-serif`;ctx.fillStyle='#fff';
+    ctx.font='600 12.5px Inter,"Noto Sans SC","Noto Sans JP",sans-serif';ctx.fillStyle='#fff';
     ctx.fillText(T(pl.ref.tag), o.x, o.y+sz+18);   // 大白话主标题
     if(pl.hover>0.15){
       ctx.globalAlpha=pl.hover*intro;
@@ -624,9 +658,7 @@ function frame(){
   const coreHover=Math.hypot(mouse.x-cx,mouse.y-cy)<orbR*0.16;
   ctx.globalCompositeOperation='lighter';
   const sr=orbR*0.13*intro*(coreHover?1.15:1)*cs;
-  const sg=ctx.createRadialGradient(cx,cy,0,cx,cy,sr*2.6);
-  sg.addColorStop(0,'#fff');sg.addColorStop(0.3,'rgba(255,195,125,.85)');sg.addColorStop(1,'rgba(255,120,60,0)');
-  ctx.fillStyle=sg;ctx.beginPath();ctx.arc(cx,cy,sr*2.6,0,6.283);ctx.fill();
+  if(sr>0) ctx.drawImage(SPR.sun,cx-sr*2.6,cy-sr*2.6,sr*5.2,sr*5.2);
   ctx.globalCompositeOperation='source-over';
   ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(cx,cy,sr,0,6.283);ctx.fill();
   ctx.fillStyle='rgba(20,14,40,.9)';ctx.font=`900 ${sr*0.9}px Orbitron`;
@@ -854,7 +886,7 @@ function buildLangSwitch(){
 /* ================= SECTION FX MODULES ================= */
 /* 每个 section 的定制交互：{ css, html(p), init(root,p)->dispose } —— 全部原生 canvas/SVG/CSS，无任何依赖 */
 (function(){
-  const EASE_ARR='cubic-bezier(.2,.9,.3,1.1)';   // 到达/点亮/开门（沿用站点 sheetIn 曲线）
+  const EASE_ARR='cubic-bezier(.22,1,.36,1)';    // 到达/点亮/开门（电影感减速曲线，与 sheetIn 一致，无回弹）
   const EASE_EXIT='cubic-bezier(.4,0,.2,1)';      // 收回/熄灭/退出
   const reduced=()=> (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches);
   const accentOf=(root,p)=> (getComputedStyle(root).getPropertyValue('--accent').trim()||p.color||'#fff');
@@ -1148,7 +1180,7 @@ function buildLangSwitch(){
       return `<div class="fx-signal">
         <canvas class="fx-signal__field" aria-hidden="true"></canvas>
         <div class="fx-signal__hd"><span class="fx-signal__dot"></span>
-          <span class="fx-signal__hdt">◉ ${esc(T({en:'ON AIR',zh:'播送中',ja:'放送中'}))} · ${items.length} ${esc(T({en:'CHANNELS',zh:'频道',ja:'チャンネル'}))}</span></div>
+          <span class="fx-signal__hdt">${esc(T({en:'ON AIR',zh:'播送中',ja:'放送中'}))} · ${items.length} ${esc(T({en:'CHANNELS',zh:'频道',ja:'チャンネル'}))}</span></div>
         <div class="fx-signal__rows">${rows}</div></div>`;
     },
     init(root,p){
@@ -1552,16 +1584,18 @@ function injectFXStyles(){
   const st=document.createElement('style'); st.id='fx-styles'; st.textContent=css; document.head.appendChild(st);
 }
 function boot(){ resize(); seedPlanets(); injectFXStyles(); buildLangSwitch(); renderStatic(); requestAnimationFrame(frame); }
-// 等字体真正加载完再开画，消除刚打开时"字体先是备用体、1秒后又跳成另一种"的闪动(FOUT)
+// 立即开画：星系不等字体（画布文字每帧重绘，字体到位后自然换上）。
+// DOM 文案（英雄区/顶栏）等字体就绪后整体淡入，避免"备用体→正式体"的跳变。
+boot();
+const fontsIn=()=>document.body.classList.add('fonts-in');
 if(document.fonts && document.fonts.load){
-  let started=false; const go=()=>{ if(!started){ started=true; boot(); } };
   Promise.all([
     document.fonts.load('900 24px Orbitron'),
     document.fonts.load('700 12px Orbitron'),
     document.fonts.load('400 14px Inter')
-  ]).then(go).catch(go);
-  setTimeout(go, 1500);   // 兜底：字体加载慢也不至于白屏
-} else boot();
+  ]).then(fontsIn).catch(fontsIn);
+  setTimeout(fontsIn, 900);   // 兜底：字体太慢也要出文案
+} else fontsIn();
 </script>
 </body>
 </html>
