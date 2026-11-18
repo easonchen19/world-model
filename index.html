@@ -47,8 +47,7 @@ const CONTENT = {
       zh:"哥伦比亚大学 · 前 Bloomberg · a16z 被投退出 · 旧金山 / 纽约 / 巴厘",
       ja:"コロンビア大学 · 元 Bloomberg · a16z 出資先イグジット · SF / NYC / バリ"
     },
-    // 首页轻声问候（淡入、克制，不喧宾夺主）
-    welcome:{ en:"Welcome to my universe", zh:"欢迎来到我的宇宙", ja:"私の宇宙へようこそ" },
+    // 首页问候语现在是动态的（按访客本地时间 + 第几天来访变化）—— 文案在本文件下方 GREETING_POOLS 里编辑
     // 此刻状态：我现在在哪、在做什么（手动维护——换城市改这里即可；tz 用 IANA 时区名，当地时间自动实时显示）
     now:{
       place:{ en:"Bali, Indonesia", zh:"巴厘岛 · 印尼", ja:"バリ · インドネシア" },
@@ -257,6 +256,61 @@ const CONTENT = {
     { title:{en:"Columbia University",zh:"哥伦比亚大学",ja:"コロンビア大学"}, link:"" }
   ]
 };
+
+// —— 每日问候：按访客本地时间分段取一句，同一天内固定、换一天换一句；
+//    连续/累计造访天数存在 localStorage，从第 2 天起在问候语下方亮一枚 "✦ ORBIT N" 徽标。
+//    想改文案直接改这里的句子；每段 3 句，想加更多变化就继续往数组里加。
+const GREETING_POOLS = {
+  deep:[  // 00:00–04:59 ・ 深夜/凌晨
+    { en:"Still up? So is the galaxy.", zh:"还没睡？银河也醒着。", ja:"まだ起きてる？銀河も起きている。" },
+    { en:"The stars are brighter this late — welcome.", zh:"这么晚，星星却更亮——欢迎你。", ja:"こんな夜更けに、星はより輝く——ようこそ。" },
+    { en:"Good night out there. Welcome in here.", zh:"外面夜深了，这里欢迎你。", ja:"外はもう夜更け。ここへようこそ。" }
+  ],
+  dawn:[  // 05:00–07:59 ・ 清晨
+    { en:"Good morning — the stars are still out.", zh:"早安——星星还没退场。", ja:"おはよう——星はまだ消えていません。" },
+    { en:"An early orbit. Good morning.", zh:"这么早就来转一圈，早安。", ja:"早い周回ですね。おはようございます。" },
+    { en:"First light, first visit of the day. Welcome.", zh:"第一缕光，今天第一次到访。欢迎你。", ja:"最初の光、今日最初の訪問。ようこそ。" }
+  ],
+  morning:[  // 08:00–11:59 ・ 上午
+    { en:"Good morning, welcome to my universe.", zh:"早上好，欢迎来到我的宇宙。", ja:"おはようございます、私の宇宙へようこそ。" },
+    { en:"A fresh morning in the galaxy. Welcome.", zh:"银河里崭新的一个早晨，欢迎你。", ja:"銀河の新しい朝。ようこそ。" },
+    { en:"Coffee in hand? Welcome to my universe.", zh:"咖啡在手？欢迎来到我的宇宙。", ja:"コーヒー片手に？私の宇宙へようこそ。" }
+  ],
+  afternoon:[  // 12:00–17:59 ・ 下午
+    { en:"Welcome to my universe.", zh:"欢迎来到我的宇宙。", ja:"私の宇宙へようこそ。" },
+    { en:"Good afternoon, traveler.", zh:"下午好，旅行者。", ja:"こんにちは、旅人さん。" },
+    { en:"Mid-day, mid-orbit. Welcome.", zh:"白昼正好，轨道正好，欢迎你。", ja:"真昼、軌道の途中。ようこそ。" }
+  ],
+  evening:[  // 18:00–21:59 ・ 傍晚/夜间
+    { en:"Good evening — the galaxy is just waking up.", zh:"晚上好——银河才刚刚苏醒。", ja:"こんばんは——銀河はちょうど目覚めたところ。" },
+    { en:"Good evening, welcome to my universe.", zh:"晚上好，欢迎来到我的宇宙。", ja:"こんばんは、私の宇宙へようこそ。" },
+    { en:"The sky's going dark — a good time to visit.", zh:"天色渐暗，正是来访的好时候。", ja:"空が暗くなってきた——訪れるのにいい時間。" }
+  ],
+  night:[  // 22:00–23:59 ・ 深夜前
+    { en:"Still exploring tonight? Welcome.", zh:"这么晚还在探索？欢迎你。", ja:"こんな時間にまだ探索中？ようこそ。" },
+    { en:"Burning the midnight oil — welcome.", zh:"挑灯夜战的你，欢迎光临。", ja:"夜更かしのあなたへ、ようこそ。" },
+    { en:"A quiet hour for a quiet universe. Welcome.", zh:"寂静的时刻，寂静的宇宙，欢迎你。", ja:"静かな時間に、静かな宇宙へ。ようこそ。" }
+  ]
+};
+function computeGreeting(){
+  let orbit=1;
+  try{
+    const today=new Date().toDateString();                          // 访客本地日历日(不是服务器/UTC)
+    const last=localStorage.getItem('wm_last_visit');
+    let count=parseInt(localStorage.getItem('wm_orbit')||'0',10)||0;
+    if(last!==today){ count+=1; localStorage.setItem('wm_orbit',String(count)); localStorage.setItem('wm_last_visit',today); }
+    orbit=count;
+  }catch(e){ /* 隐私模式/存储被拦 → 退化为"每次都像第一次"，不显示徽标，绝不报错 */ }
+
+  const h=new Date().getHours();                                    // 访客本地小时
+  const bucket = h<5?'deep' : h<8?'dawn' : h<12?'morning' : h<18?'afternoon' : h<22?'evening' : 'night';
+  const pool=GREETING_POOLS[bucket];
+  const seed=new Date().toDateString().split('').reduce((a,c)=>a+c.charCodeAt(0),0);   // 按日期取种子：同一天刷新不跳，换一天换一句
+  const text=pool[seed%pool.length];
+
+  return { text, orbit:(orbit>1?orbit:0) };   // orbit=0 表示今天不亮徽标（首次来访 / 存储不可用）
+}
+const GREETING=computeGreeting();
 </script>
 <!-- ============================================================= -->
 <!--                   ▲  CONTENT 区结束  ▲                        -->
@@ -294,7 +348,9 @@ body{color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-font-smoot
 .langsw button:hover{color:var(--ink)}
 
 .intro{position:fixed;left:0;right:0;bottom:38px;z-index:30;text-align:center;pointer-events:none;transition:opacity 1s}
-.intro .welcome{font-family:var(--body);font-weight:300;font-size:13px;letter-spacing:.03em;color:var(--ink-dim);opacity:.72;margin-bottom:15px}
+.intro .welcome{font-family:var(--body);font-weight:300;font-size:13px;letter-spacing:.03em;color:var(--ink-dim);opacity:.72;margin-bottom:8px}
+.intro .orbitBadge{display:none;font-family:var(--display);font-size:9.5px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;margin-bottom:12px;opacity:.85}
+.intro .orbitBadge.show{display:block}
 .intro .r{font-family:var(--display);font-weight:700;letter-spacing:.42em;font-size:10.5px;color:var(--mars);margin-bottom:10px;text-transform:uppercase}
 .intro .h{font-family:var(--display);font-weight:900;font-size:clamp(26px,4.6vw,46px);letter-spacing:.1em;
   background:linear-gradient(180deg,#ffffff 0%,#c9d6ff 72%,#a9b7e6 100%);
@@ -426,6 +482,7 @@ body.fonts-in .topbar,body.fonts-in .intro{opacity:1}
 
 <div class="intro" id="intro">
   <div class="welcome" id="introWelcome"></div>
+  <div class="orbitBadge" id="introOrbit"></div>
   <div class="r" id="introKicker"></div>
   <div class="h" id="introName"></div>
   <div class="tag" id="introTag"></div>
@@ -1062,7 +1119,12 @@ function renderBody(p){
 /* ---------- 三语 ---------- */
 function renderStatic(){
   document.documentElement.lang=LANG;
-  document.getElementById('introWelcome').textContent=T(CONTENT.core.welcome);
+  document.getElementById('introWelcome').textContent=T(GREETING.text);
+  const ob=document.getElementById('introOrbit');
+  if(GREETING.orbit){
+    ob.textContent=T({en:`✦ ORBIT ${GREETING.orbit}`, zh:`✦ 第 ${GREETING.orbit} 次回轨`, ja:`✦ ${GREETING.orbit} 回目の周回`});
+    ob.classList.add('show');
+  } else { ob.classList.remove('show'); ob.textContent=''; }
   document.getElementById('introKicker').textContent=T(CONTENT.core.kicker);
   document.getElementById('introName').textContent=T(CONTENT.core.name);
   document.getElementById('introTag').textContent=T(CONTENT.core.tagline);

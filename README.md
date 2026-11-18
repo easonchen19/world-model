@@ -6,6 +6,7 @@ An interactive personal "world model": a living galaxy where each planet is a di
 - Animated spiral galaxy with orbiting planets + clickable satellite moons
 - Interstellar "warp" transition into each section
 - Ambient sound (synthesized, **on by default** — starts on the visitor's first click/tap per browser autoplay policy; mute button top-right)
+- A different greeting every visit — aware of the visitor's own local time of day, with a small "Orbit N" badge that appears for anyone who comes back on a new day
 
 Each section opens into its **own bespoke interactive instrument** (all vanilla canvas/SVG — still no dependencies):
 
@@ -97,6 +98,18 @@ Until a store is connected the HUD still works — it shows each visitor **their
 3. **Redeploy** (`vercel --prod`, or push to `main`). Counters start accumulating from that moment.
 
 Preview the HUD's full look locally without a store: open `index.html?livedemo=1` (uses sample data only when the API is unreachable).
+
+---
+
+## The daily greeting (above "FOUNDER & CEO · JAGUAR AI")
+
+The line that fades in above the hero changes with **the visitor's own clock**, not the server's — someone opening the site at 2am sees a different line than someone opening it at 2pm, wherever they are. The logic lives in `GREETING_POOLS` + `computeGreeting()`, right after the `CONTENT` block closes in `index.html`:
+
+- **Time of day** picks one of 6 pools (`deep` / `dawn` / `morning` / `afternoon` / `evening` / `night`), each with 3 phrasings in EN/中/日.
+- **Which of the 3 phrasings** is picked is seeded by the visitor's local calendar date — stable all day (no flicker on refresh), different on a different day.
+- **A small gold "✦ ORBIT N" badge** appears under the greeting from the visitor's 2nd distinct calendar day onward (tracked in `localStorage`, nothing server-side, degrades silently to "no badge" in private browsing).
+
+To add more variety, just add more `{en, zh, ja}` lines to any pool in `GREETING_POOLS` — no other code needs to change.
 
 ## Editing content later
 
